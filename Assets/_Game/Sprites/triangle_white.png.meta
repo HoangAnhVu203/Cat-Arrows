@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 2e14b8db27dc446bc9a335c0af757c56
+guid: 7bf00825f898e4d748fb96ebc9a6f815
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 6355584359893090463
-    second: arrow_tachnen_0
+      213: -4597381612908559770
+    second: triangle_white_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -126,13 +126,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: arrow_tachnen_0
+      name: triangle_white_0
       rect:
         serializedVersion: 2
-        x: 7
-        y: 178
-        width: 502
-        height: 154
+        x: 32
+        y: 55
+        width: 448
+        height: 389
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -141,8 +141,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: f90c47f4d42933850800000000000000
-      internalID: 6355584359893090463
+      spriteID: 6624ca1f7c1d230c0800000000000000
+      internalID: -4597381612908559770
       vertices: []
       indices: 
       edges: []
@@ -161,7 +161,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      arrow_tachnen_0: 6355584359893090463
+      triangle_white_0: -4597381612908559770
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
