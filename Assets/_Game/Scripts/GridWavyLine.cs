@@ -86,6 +86,11 @@ public class GridWavyLine : MonoBehaviour
     [Range(2f, 30f)] public float returnSpeedCellsPerSec = 12f;
     [Range(0.01f, 0.5f)] public float returnStopEpsCells = 0.02f;
 
+    [Header("Block / Collision")]
+    public LayerMask lineLayerMask;              
+    [Min(0.01f)] public float probeAheadCells = 0.35f; 
+
+
     float movingOffsetStart;  
     Coroutine moveCR;
     Coroutine returnCR;
@@ -188,10 +193,8 @@ public class GridWavyLine : MonoBehaviour
         if (isMoving) return;
         if (basePts == null || basePts.Count < 2) return;
 
-        // lưu offset ban đầu để hồi về
         movingOffsetStart = movingOffset;
 
-        // dừng mọi routine đang chạy
         if (moveCR != null) StopCoroutine(moveCR);
         if (returnCR != null) StopCoroutine(returnCR);
 
@@ -209,31 +212,31 @@ public class GridWavyLine : MonoBehaviour
 
         while (true)
         {
-            movingOffset += speed * Time.deltaTime;
-            Rebuild();
+            float step = speed * Time.deltaTime;
+            float nextOffset = movingOffset + step;
 
-            if (blockIfAhead && IsBlockedAhead())
+            if (blockIfAhead && IsBlockedStep(movingOffset, nextOffset))
             {
                 endedByBlock = true;
 
                 if (returnToStartOnBlock)
                 {
                     if (returnCR != null) StopCoroutine(returnCR);
-                    returnCR = StartCoroutine(ReturnRoutine(movingOffset, movingOffsetStart));
+                    returnCR = StartCoroutine(ReturnRoutine(movingOffset, 0f));
                     yield return returnCR;
                 }
                 break;
             }
 
-            if (!moveForever && movingOffset >= targetDist)
-                break;
+            movingOffset = nextOffset;
+            Rebuild();
 
+            if (!moveForever && movingOffset >= targetDist) break;
             yield return null;
         }
 
         isMoving = false;
 
-        // CHỈ destroy nếu kết thúc bình thường (không phải do block)
         if (destroyAfterMove && !endedByBlock)
         {
             yield return new WaitForSeconds(destroyDelay);
@@ -243,36 +246,31 @@ public class GridWavyLine : MonoBehaviour
 
 
 
+
     // ===================== BLOCK LOGIC =====================
 
     bool IsBlockedAhead()
     {
         if (!grid || basePts == null || basePts.Count < 2) return false;
 
-        // vị trí đầu line (end của path + movingOffset)
         float sHead = totalLen + movingOffset;
 
         Vector3 p = PointAtExtended(basePts, cum, sHead);
         Vector3 tan = TangentAtExtended(basePts, cum, sHead);
 
-        // snap hướng theo 4 hướng để dò "đúng kiểu grid"
         Vector2 dir = SnapToCardinal(tan);
         if (dir.sqrMagnitude < 1e-6f) return false;
 
         float dist = Mathf.Max(0.01f, blockProbeCells) * grid.cellSize;
 
-        // radius theo độ dày line (world unit)
         float radius = Mathf.Max(0.001f, (lineWidth * 0.5f) * blockRadiusMul);
 
-        // CircleCast để bắt chặn "dày" (đỡ lọt qua nhau)
         RaycastHit2D hit = Physics2D.CircleCast((Vector2)p, radius, dir, dist, blockMask);
 
         if (!hit.collider) return false;
 
-        // bỏ qua chính mình
         if (hit.collider == hitbox) return false;
 
-        // nếu bạn có nhiều collider con, có thể cần check root:
         if (hit.collider.transform.IsChildOf(transform)) return false;
 
         return true;
@@ -572,7 +570,7 @@ public class GridWavyLine : MonoBehaviour
     {
         if (!hitbox || worldPts == null || worldPts.Length < 2) return;
 
-        int stride = 2;
+        int stride = 1; // QUAN TRỌNG: tránh "thủng" collider
         int count = Mathf.Max(2, (worldPts.Length + stride - 1) / stride);
 
         var pts = new Vector2[count];
@@ -591,9 +589,10 @@ public class GridWavyLine : MonoBehaviour
         }
 
         hitbox.points = pts;
-        hitbox.edgeRadius = 0.18f * (grid ? grid.cellSize : 1f);
+        hitbox.edgeRadius = Mathf.Max(0.01f, lineWidth * 0.5f); // khớp độ dày line
         hitbox.isTrigger = true;
     }
+
 
     // ===================== fade first N cells =====================
 
@@ -680,7 +679,6 @@ public class GridWavyLine : MonoBehaviour
         float v = Mathf.Max(0.01f, returnSpeedCellsPerSec) * cs;
         float eps = Mathf.Max(0.0001f, returnStopEpsCells) * cs;
 
-        // đảm bảo bắt đầu đúng vị trí hiện tại
         movingOffset = from;
 
         while (Mathf.Abs(movingOffset - to) > eps)
@@ -693,5 +691,36 @@ public class GridWavyLine : MonoBehaviour
         movingOffset = to;
         Rebuild();
     }
+
+    bool IsBlockedStep(float fromOffset, float toOffset)
+    {
+        Vector3 p0 = PointAtExtended(basePts, cum, totalLen + fromOffset);
+        Vector3 p1 = PointAtExtended(basePts, cum, totalLen + toOffset);
+
+        Vector2 dir = (p1 - p0);
+        float dist = dir.magnitude;
+        if (dist < 1e-6f) return false;
+        dir /= dist;
+
+        float radius = Mathf.Max(0.01f, lineWidth * 0.55f);
+
+        var filter = new ContactFilter2D();
+        filter.useLayerMask = true;
+        filter.layerMask = lineLayerMask;
+        filter.useTriggers = true;
+
+        RaycastHit2D[] hits = new RaycastHit2D[8];
+        int hitCount = Physics2D.CircleCast(p0, radius, dir, filter, hits, dist);
+
+        for (int i = 0; i < hitCount; i++)
+        {
+            var h = hits[i];
+            if (!h.collider) continue;
+            if (h.collider == hitbox) continue; 
+            return true;
+        }
+        return false;
+    }
+
 
 }
