@@ -81,6 +81,16 @@ public class GridWavyLine : MonoBehaviour
     [Tooltip("Bán kính dò (tỉ lệ theo độ dày line). Tăng nếu vẫn lọt qua nhau.")]
     [Range(0.3f, 1.2f)] public float blockRadiusMul = 0.9f;
 
+    [Header("On Collision")]
+    public bool returnToStartOnBlock = true;
+    [Range(2f, 30f)] public float returnSpeedCellsPerSec = 12f;
+    [Range(0.01f, 0.5f)] public float returnStopEpsCells = 0.02f;
+
+    float movingOffsetStart;  
+    Coroutine moveCR;
+    Coroutine returnCR;
+
+
     // ===================== runtime =====================
 
     Camera cam;
@@ -91,6 +101,8 @@ public class GridWavyLine : MonoBehaviour
     List<Vector3> basePts;
     List<float> cum;
     bool autoIsVertical;
+    bool endedByBlock;
+
 
     void Awake()
     {
@@ -176,29 +188,42 @@ public class GridWavyLine : MonoBehaviour
         if (isMoving) return;
         if (basePts == null || basePts.Count < 2) return;
 
-        // ======= NEW: block check =======
-        if (blockIfAhead && IsBlockedAhead())
-            return;
+        // lưu offset ban đầu để hồi về
+        movingOffsetStart = movingOffset;
 
-        StopAllCoroutines();
-        StartCoroutine(MoveRoutine());
+        // dừng mọi routine đang chạy
+        if (moveCR != null) StopCoroutine(moveCR);
+        if (returnCR != null) StopCoroutine(returnCR);
+
+        moveCR = StartCoroutine(MoveRoutine());
     }
+
 
     IEnumerator MoveRoutine()
     {
         isMoving = true;
+        endedByBlock = false;
 
         float speed = moveSpeedCellsPerSec * grid.cellSize;
         float targetDist = totalLen + extraOutCells * grid.cellSize;
 
         while (true)
         {
-            // nếu đang chạy mà phía trước xuất hiện vật chắn => dừng lại
-            if (blockIfAhead && IsBlockedAhead())
-                break;
-
             movingOffset += speed * Time.deltaTime;
             Rebuild();
+
+            if (blockIfAhead && IsBlockedAhead())
+            {
+                endedByBlock = true;
+
+                if (returnToStartOnBlock)
+                {
+                    if (returnCR != null) StopCoroutine(returnCR);
+                    returnCR = StartCoroutine(ReturnRoutine(movingOffset, movingOffsetStart));
+                    yield return returnCR;
+                }
+                break;
+            }
 
             if (!moveForever && movingOffset >= targetDist)
                 break;
@@ -208,12 +233,15 @@ public class GridWavyLine : MonoBehaviour
 
         isMoving = false;
 
-        if (destroyAfterMove)
+        // CHỈ destroy nếu kết thúc bình thường (không phải do block)
+        if (destroyAfterMove && !endedByBlock)
         {
             yield return new WaitForSeconds(destroyDelay);
             Destroy(destroyRoot ? destroyRoot.gameObject : gameObject);
         }
     }
+
+
 
     // ===================== BLOCK LOGIC =====================
 
@@ -645,4 +673,25 @@ public class GridWavyLine : MonoBehaviour
 
         return outCells;
     }
+
+    IEnumerator ReturnRoutine(float from, float to)
+    {
+        float cs = grid.cellSize;
+        float v = Mathf.Max(0.01f, returnSpeedCellsPerSec) * cs;
+        float eps = Mathf.Max(0.0001f, returnStopEpsCells) * cs;
+
+        // đảm bảo bắt đầu đúng vị trí hiện tại
+        movingOffset = from;
+
+        while (Mathf.Abs(movingOffset - to) > eps)
+        {
+            movingOffset = Mathf.MoveTowards(movingOffset, to, v * Time.deltaTime);
+            Rebuild();
+            yield return null;
+        }
+
+        movingOffset = to;
+        Rebuild();
+    }
+
 }
