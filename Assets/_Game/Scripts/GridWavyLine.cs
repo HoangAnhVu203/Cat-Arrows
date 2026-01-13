@@ -316,8 +316,9 @@ public class GridWavyLine : MonoBehaviour
 
             Vector3 tan = TangentAtExtended(basePts, cum, s2);
 
-            Vector3 n = new Vector3(-tan.y, tan.x, 0f).normalized;
-            float waveCoord = s2;
+            Vector3 n;
+            float waveCoord;
+            ResolveWaveFrame(p, tan, out n, out waveCoord);
 
             float phi = uniformWave ? uniformPhase : phase;
 
