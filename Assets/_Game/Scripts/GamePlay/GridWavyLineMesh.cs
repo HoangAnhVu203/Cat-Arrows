@@ -14,26 +14,36 @@ public class GridWavyLineMesh : MonoBehaviour
     public MeshRenderer meshRenderer;
     public PolygonCollider2D poly;        // collider theo mesh
     public Transform destroyRoot;
+
     [Header("Head (Spine at end)")]
     public SkeletonAnimation headPrefab;
     public SkeletonAnimation head;
-    private float headForwardOffsetCells = 0.0f;
-    private float headSideOffsetCells = 0.0f;
+    [SerializeField] float headForwardOffsetCells = 0.0f;
+    [SerializeField] float headSideOffsetCells = 0.0f;
     public bool rotateHeadAlongDirection = true;
-    private float headYOffsetWorld = -0.2f;
+    [SerializeField] float headYOffsetWorld = -0.2f;
     public float headDownAlongLineCells = 0.25f;
 
     [Header("Caps")]
     public bool roundStartCap = true;
-    [Range(2, 24)] public int startCapSegments = 10;   
+    [Range(2, 24)] public int startCapSegments = 10;
     [Range(0.2f, 2f)] public float startCapRadiusMul = 1f;
 
-        [Header("Base path in GRID (turn points)")]
+    [Header("Base path in GRID (turn points)")]
     public List<Vector2Int> turnCells = new();
 
     [Header("Visual")]
     [Range(0.02f, 1f)] public float lineWidth = 0.18f;
     public Material material;
+
+    [Header("Start Fade (vertex alpha)")]
+    public bool startFade = true;
+    [Tooltip("Độ dài đoạn mờ ở đầu (CELL).")]
+    [Range(0f, 5f)] public float fadeStartLengthCells = 1.2f;
+    [Tooltip("Alpha tại đúng điểm đầu (0..1).")]
+    [Range(0f, 1f)] public float fadeStartAlpha = 0.15f;
+    [Tooltip("Độ cong fade (cao hơn = lên alpha nhanh hơn).")]
+    [Range(0.2f, 4f)] public float fadeCurve = 1.6f;
 
     [Header("Wave Params (CELL units)")]
     [Range(0f, 0.45f)] public float amplitudeCells = 0.22f;
@@ -52,20 +62,12 @@ public class GridWavyLineMesh : MonoBehaviour
     [Range(2, 16)] public int cornerSegments = 10;
 
     [Header("Corner Protection (anti-broken corners)")]
-    [Tooltip("Bảo vệ mỗi góc theo đơn vị CELL. Trong vùng này amplitude giảm về 0 để không 'bể'.")]
     [Range(0f, 2.5f)] public float cornerProtectCells = 1.05f;
-
-    [Tooltip("Độ cong giảm amplitude (0 = giảm mạnh, 1 = giảm nhẹ).")]
     [Range(0.05f, 1f)] public float cornerProtectCurve = 0.35f;
 
     [Header("Wave Quality")]
-    [Tooltip("Số lần lọc mượt 1D cho wave offset. 2–3 thường đẹp.")]
     [Range(0, 6)] public int waveSmoothIters = 2;
-
-    [Tooltip("Giảm amplitude theo độ gắt góc (dựa trên tangents). 0 = không giảm, 1 = giảm mạnh.")]
     [Range(0f, 1f)] public float cornerAmpMul = 0.25f;
-
-    [Tooltip("Độ nhạy góc (càng cao càng giảm mạnh ở góc).")]
     [Range(0.5f, 6f)] public float cornerSharpness = 2.0f;
 
     [Header("Click Move")]
@@ -80,24 +82,27 @@ public class GridWavyLineMesh : MonoBehaviour
     public bool destroyAfterMove = false;
     [Range(0.1f, 10f)] public float destroyDelay = 2f;
 
-    // ===================== BLOCK CHECK =====================
-
     [Header("Block Check (prevent move if blocked ahead)")]
     public bool blockIfAhead = true;
-
-    [Tooltip("Layer của các line/collider cần chặn. Nên tạo Layer 'Line' và gán cho các object line.")]
     public LayerMask lineLayerMask = ~0;
-
-    [Tooltip("Dò trước đầu line bao nhiêu CELL để xem có bị chắn không.")]
     [Range(0.05f, 2f)] public float probeAheadCells = 0.35f;
-
-    [Tooltip("Bán kính dò (tỉ lệ theo độ dày line).")]
     [Range(0.2f, 1.5f)] public float probeRadiusMul = 0.75f;
 
     [Header("On Collision")]
     public bool returnToStartOnBlock = true;
     [Range(2f, 30f)] public float returnSpeedCellsPerSec = 12f;
     [Range(0.01f, 0.5f)] public float returnStopEpsCells = 0.02f;
+
+    [Header("Head Rotation Fix")]
+    [Tooltip("Góc bù thêm cho head (độ). Dùng để khớp hướng mặc định của Spine.")]
+    public float headAngleOffset = 0f;
+
+    [Tooltip("Nếu bật: đi sang trái sẽ dùng flipX thay vì quay 180 (tránh bị lật ngược khó chịu).")]
+    public bool flipHeadWhenLeft = true;
+
+    [Tooltip("Nếu Spine mặc định nhìn sang TRÁI, bật cái này để đảo logic.")]
+    public bool spineFacesLeftByDefault = false;
+
 
     // ===================== runtime =====================
 
@@ -107,6 +112,7 @@ public class GridWavyLineMesh : MonoBehaviour
     Vector3[] verts;
     Vector2[] uvs;
     int[] tris;
+    Color32[] colors; // <==== FADE ALPHA HERE
 
     // path (centerline in world)
     List<Vector3> basePts;
@@ -128,11 +134,13 @@ public class GridWavyLineMesh : MonoBehaviour
     float[] waveArr;
     Vector2[] tangents;
     Vector2[] normals;
+
     // Cached axis for head so offset never flips
     Vector3 headForwardAxisW = Vector3.right; // world
-    Vector3 headSideAxisW    = Vector3.up;    // world
+    Vector3 headSideAxisW = Vector3.up;       // world
     bool headAxisReady = false;
-
+    bool registeredToGM = false;
+    bool consumedHeartThisClick = false;
 
     void Awake()
     {
@@ -158,6 +166,15 @@ public class GridWavyLineMesh : MonoBehaviour
         if (material) meshRenderer.sharedMaterial = material;
     }
 
+    void OnEnable()
+    {
+        if (!registeredToGM && GameManager.Instance != null)
+        {
+            GameManager.Instance.RegisterLine();
+            registeredToGM = true;
+        }
+    }
+
     void Start()
     {
         if (!grid) return;
@@ -179,17 +196,23 @@ public class GridWavyLineMesh : MonoBehaviour
             TryPick(Touchscreen.current.primaryTouch.position.ReadValue());
     }
 
+    void OnDisable()
+    {
+        if (registeredToGM && GameManager.Instance != null)
+        {
+            GameManager.Instance.UnregisterLine();
+            registeredToGM = false;
+        }
+    }
+
     void BuildHead()
     {
         if (!headPrefab) return;
 
         if (head) Destroy(head.gameObject);
         head = Instantiate(headPrefab, transform);
-
-        // để head render đúng sorting
-        // head.GetComponent<MeshRenderer>().sortingLayerName = "Line";
-        // head.GetComponent<MeshRenderer>().sortingOrder = 10;
     }
+
     void UpdateHeadAtEnd_NoWave()
     {
         if (!head) return;
@@ -202,31 +225,90 @@ public class GridWavyLineMesh : MonoBehaviour
         Vector3 p = PointAtExtended(basePts, cum, sEnd);
         p.z = 0f;
 
-        // offset cố định, KHÔNG ăn sóng
         p += headForwardAxisW * (headForwardOffsetCells * cs);
         p += headSideAxisW * (headSideOffsetCells * cs);
         p += headSideAxisW * (headDownAlongLineCells * cs);
+
+        p.y += headYOffsetWorld;
+
         p.z = 0f;
 
-        // Spine: set transform
         Transform ht = head.transform;
         ht.position = p;
 
         if (rotateHeadAlongDirection)
         {
-            float angle = Mathf.Atan2(headForwardAxisW.y, headForwardAxisW.x) * Mathf.Rad2Deg;
-            ht.rotation = Quaternion.Euler(0f, 0f, angle);
+            Vector3 f = headForwardAxisW.normalized;
+            bool goingLeft = (f.x < -0.001f);
+
+            if (flipHeadWhenLeft && Mathf.Abs(f.x) > Mathf.Abs(f.y))
+            {
+                float angle = Mathf.Atan2(f.y, f.x) * Mathf.Rad2Deg;
+
+                angle = 0f;
+
+                ht.rotation = Quaternion.Euler(0f, 0f, angle + headAngleOffset);
+
+                float sx = Mathf.Abs(head.Skeleton.ScaleX);
+                bool needFlip = goingLeft;
+
+                if (spineFacesLeftByDefault) needFlip = !needFlip;
+
+                head.Skeleton.ScaleX = needFlip ? -sx : sx;
+            }
+            else
+            {
+                float angle = Mathf.Atan2(f.y, f.x) * Mathf.Rad2Deg;
+
+                if (spineFacesLeftByDefault) angle += 180f;
+
+                ht.rotation = Quaternion.Euler(0f, 0f, angle + headAngleOffset);
+
+                float sx = Mathf.Abs(head.Skeleton.ScaleX);
+                head.Skeleton.ScaleX = sx;
+            }
         }
+
     }
 
     void TryPick(Vector2 screenPos)
-    {
-        Vector3 w = cam.ScreenToWorldPoint(screenPos);
-        w.z = 0f;
+{
+    if (GameManager.Instance != null && GameManager.Instance.CurrentState != GameManager.GameState.GamePlay)
+        return;
 
-        if (poly && poly.OverlapPoint(w))
-            StartMove();
+    Vector3 w = cam.ScreenToWorldPoint(screenPos);
+    w.z = 0f;
+
+    if (!(poly && poly.OverlapPoint(w)))
+        return;
+
+    // Click đúng line -> head idle2
+    if (head) head.AnimationState.SetAnimation(0, "idle2", true);
+
+    // ===== RULE: nếu bị block ngay khi click -> trừ tim và (tuỳ) không cho chạy =====
+    if (blockIfAhead)
+    {
+        consumedHeartThisClick = false;
+
+        float cs = grid ? grid.cellSize : 1f;
+        float step = Mathf.Max(0.01f, probeAheadCells) * cs;
+
+        bool blocked = IsBlockedStep(movingOffset, movingOffset + step);
+
+        if (blocked)
+        {
+            if (!consumedHeartThisClick && GameManager.Instance != null)
+            {
+                GameManager.Instance.LoseHeart();
+                consumedHeartThisClick = true;
+            }
+            return;
+        }
     }
+    StartMove();
+    
+}
+
 
     public void StartMove()
     {
@@ -255,7 +337,7 @@ public class GridWavyLineMesh : MonoBehaviour
             if (blockIfAhead && IsBlockedStep(movingOffset, nextOffset))
             {
                 endedByBlock = true;
-
+                
                 if (returnToStartOnBlock)
                 {
                     if (returnCR != null) StopCoroutine(returnCR);
@@ -311,11 +393,9 @@ public class GridWavyLineMesh : MonoBehaviour
 
         if (!grid || turnCells == null || turnCells.Count < 2) return;
 
-        // 1) Expand grid cells
         var cells = ExpandCellsByStep(turnCells);
         if (cells.Count < 2) return;
 
-        // 2) Convert to world raw points
         var raw = new List<Vector3>(cells.Count);
         for (int i = 0; i < cells.Count; i++)
         {
@@ -327,7 +407,6 @@ public class GridWavyLineMesh : MonoBehaviour
         raw = RemoveConsecutiveDuplicates(raw, 1e-6f);
         if (raw.Count < 2) return;
 
-        // 3) Smooth corners by quadratic Bezier
         float cs = grid.cellSize;
         float r = Mathf.Clamp(cornerRadiusCells, 0f, 0.49f) * cs;
 
@@ -355,7 +434,6 @@ public class GridWavyLineMesh : MonoBehaviour
             d1 /= len1;
             d2 /= len2;
 
-            // straight?
             if (Vector3.Dot(d1, d2) > 0.999f)
             {
                 smoothed.Add(B);
@@ -383,11 +461,9 @@ public class GridWavyLineMesh : MonoBehaviour
 
         basePts = smoothed;
 
-        // 4) Build cumulative length
         cum = BuildCum(basePts);
         totalLen = cum[cum.Count - 1];
 
-        // 5) Corner arc-length list: project each original turn (except endpoints) onto smoothed path
         cornerS = new List<float>();
         for (int i = 1; i < raw.Count - 1; i++)
         {
@@ -424,20 +500,16 @@ public class GridWavyLineMesh : MonoBehaviour
         float cs = grid.cellSize;
         int sampleCount = Mathf.Max(2, Mathf.CeilToInt((totalLen / cs) * samplesPerCell));
 
-        // ===== params =====
         float amp = amplitudeCells * cs;
         float waveLen = Mathf.Max(0.0001f, wavelengthCells * cs);
         float maxAmp = 0.35f * cs;
         float phi = uniformWave ? uniformPhase : phase;
 
-        // mốc khóa pha theo grid -> đồng nhất mọi line
         Vector3 gridOrigin = grid.CellToWorld(new Vector2Int(0, 0));
         gridOrigin.z = 0f;
 
-        // temp arrays (tangents/normals/waveArr...) 
         EnsureTempArrays(sampleCount);
 
-        // ===== 1) sample base points (WORLD) =====
         var centerWorld = new Vector3[sampleCount];
 
         for (int i = 0; i < sampleCount; i++)
@@ -451,37 +523,27 @@ public class GridWavyLineMesh : MonoBehaviour
             centerWorld[i] = p;
         }
 
-        // ===== 2) Compute smooth tangents/normals (WORLD) =====
         ComputeSmoothFrames(centerWorld, tangents, normals);
 
-        // ===== 3) Build wave offsets (WORLD-axis locked) =====
         for (int i = 0; i < sampleCount; i++)
         {
             float t = (sampleCount == 1) ? 0f : (float)i / (sampleCount - 1);
             float s = t * totalLen;
             float s2 = s + movingOffset;
 
-            // --- corner weights (giữ logic của bạn) ---
-            float protectW = CornerProtectWeight_ByCornerS(s2, cs); // 0..1
+            float protectW = CornerProtectWeight_ByCornerS(s2, cs);
 
             float cw = 0f;
             if (i > 0 && i < sampleCount - 1)
                 cw = CornerWeight(tangents[i - 1], tangents[i + 1], cornerSharpness);
 
             float cornerW = Mathf.Max(protectW, cw);
-
-            // amplitude near corner
             float ampUsed = Mathf.Lerp(amp, amp * cornerAmpMul, cornerW);
 
-            // --- quyết định đoạn dọc/ngang ổn định ---
-            // tangents[] là Vector2 theo WORLD
             float axT = Mathf.Abs(tangents[i].x);
             float ayT = Mathf.Abs(tangents[i].y);
             bool isVertical = (ayT >= axT);
 
-            // --- waveCoord khóa theo WORLD & gridOrigin để đồng nhất ---
-            // vertical: dùng worldY, lệch theo X
-            // horizontal: dùng worldX, lệch theo Y
             float waveCoord = isVertical
                 ? (centerWorld[i].y - gridOrigin.y)
                 : (centerWorld[i].x - gridOrigin.x);
@@ -492,7 +554,6 @@ public class GridWavyLineMesh : MonoBehaviour
             waveArr[i] = w;
         }
 
-        // ===== 4) Smooth wave offsets =====
         if (waveSmoothIters > 0)
             Smooth1D(waveArr, waveSmoothIters);
 
@@ -514,15 +575,11 @@ public class GridWavyLineMesh : MonoBehaviour
             centerLocal[i] = pL;
         }
 
-        // ===== 6) Build mesh & collider from LOCAL center =====
         BuildRibbonMesh(centerLocal);
         BuildPolygonColliderFromRibbon(centerLocal);
 
-        // UpdateHeadAtEnd(centerWorld, tangents, waveArr, gridOrigin);
         UpdateHeadAtEnd_NoWave();
-
     }
-
 
     void EnsureTempArrays(int n)
     {
@@ -552,7 +609,7 @@ public class GridWavyLineMesh : MonoBehaviour
         return Mathf.Pow(x, k);
     }
 
-    // ===================== MESH (INDEX SAFE) =====================
+    // ===================== MESH =====================
 
     void BuildRibbonMesh(Vector3[] center)
     {
@@ -560,27 +617,21 @@ public class GridWavyLineMesh : MonoBehaviour
         if (n < 2) { ClearMeshOnly(); return; }
 
         float halfW = Mathf.Max(0.001f, lineWidth * 0.5f);
-        float capR  = halfW * Mathf.Max(0.01f, startCapRadiusMul);
+        float capR = halfW * Mathf.Max(0.01f, startCapRadiusMul);
 
         int capSeg = (roundStartCap ? Mathf.Max(2, startCapSegments) : 0);
 
-        // ===== Vertex count =====
-        // Ribbon: n*2
-        // Start cap: 1 center + (capSeg+1) arc points
         int capVert = roundStartCap ? (1 + (capSeg + 1)) : 0;
-
         int vCount = n * 2 + capVert;
 
-        // ===== Triangle count =====
-        // Ribbon: (n-1)*6
-        // Start cap: capSeg * 3 (fan)
         int tCount = (n - 1) * 6 + (roundStartCap ? capSeg * 3 : 0);
 
         if (verts == null || verts.Length != vCount) verts = new Vector3[vCount];
-        if (uvs == null   || uvs.Length   != vCount) uvs   = new Vector2[vCount];
-        if (tris == null  || tris.Length  != tCount) tris  = new int[tCount];
+        if (uvs == null || uvs.Length != vCount) uvs = new Vector2[vCount];
+        if (tris == null || tris.Length != tCount) tris = new int[tCount];
+        if (colors == null || colors.Length != vCount) colors = new Color32[vCount];
 
-        // ===== UV along length (ribbon) =====
+        // UV along length (ribbon)
         if (cumLen == null || cumLen.Length != n) cumLen = new float[n];
         float total = 0f;
         cumLen[0] = 0f;
@@ -591,7 +642,11 @@ public class GridWavyLineMesh : MonoBehaviour
         }
         float invTotal = (total > 1e-6f) ? 1f / total : 0f;
 
-        // ===== Build ribbon verts =====
+        // Fade length in WORLD units (based on grid cell)
+        float cs = (grid ? grid.cellSize : 1f);
+        float fadeLenW = Mathf.Max(0.0001f, fadeStartLengthCells * cs);
+
+        // Build ribbon verts
         for (int i = 0; i < n; i++)
         {
             Vector3 dir;
@@ -611,9 +666,22 @@ public class GridWavyLineMesh : MonoBehaviour
             float u = cumLen[i] * invTotal;
             uvs[vi + 0] = new Vector2(u, 0f);
             uvs[vi + 1] = new Vector2(u, 1f);
+
+            // ===== START FADE (vertex alpha) =====
+            float a01 = 1f;
+            if (startFade && fadeStartLengthCells > 0.0001f)
+            {
+                float x = Mathf.Clamp01(cumLen[i] / fadeLenW);        
+                x = Mathf.Pow(x, Mathf.Max(0.01f, fadeCurve));      
+                a01 = Mathf.Lerp(fadeStartAlpha, 1f, x);
+            }
+
+            byte aByte = (byte)Mathf.Clamp(Mathf.RoundToInt(a01 * 255f), 0, 255);
+            colors[vi + 0] = new Color32(255, 255, 255, aByte);
+            colors[vi + 1] = new Color32(255, 255, 255, aByte);
         }
 
-        // ===== Ribbon triangles =====
+        // Ribbon triangles
         int ti = 0;
         for (int i = 0; i < n - 1; i++)
         {
@@ -626,38 +694,35 @@ public class GridWavyLineMesh : MonoBehaviour
             tris[ti++] = b; tris[ti++] = c; tris[ti++] = d;
         }
 
-        // ===== Start cap (rounded) =====
+        // Start cap (rounded)
         if (roundStartCap)
         {
-            // tangent at start
             Vector3 t0 = center[1] - center[0];
             if (t0.sqrMagnitude < 1e-10f) t0 = Vector3.right;
             else t0.Normalize();
 
             Vector3 n0 = new Vector3(-t0.y, t0.x, 0f);
 
-            // cap base index
             int capBase = n * 2;
 
-            // center of fan
             verts[capBase] = center[0];
             uvs[capBase] = new Vector2(0f, 0.5f);
 
-            // nửa vòng tròn phía "đầu" (ngược tangent)
-            // vẽ từ left -> right để nối với 2 cạnh ribbon ở i=0
-            // left = center - n0*halfW, right = center + n0*halfW
+            // cap alpha = alpha at start (fadeStartAlpha)
+            byte capA = (byte)Mathf.Clamp(Mathf.RoundToInt((startFade ? fadeStartAlpha : 1f) * 255f), 0, 255);
+            colors[capBase] = new Color32(255, 255, 255, capA);
+
             for (int s = 0; s <= capSeg; s++)
             {
                 float a = Mathf.Lerp(Mathf.PI * 0.5f, -Mathf.PI * 0.5f, (float)s / capSeg);
-                // local circle basis: (-t0) là hướng ra "đầu", n0 là ngang
                 Vector3 p = center[0] + (-t0 * Mathf.Cos(a) + n0 * Mathf.Sin(a)) * capR;
 
                 int idx = capBase + 1 + s;
                 verts[idx] = p;
-                uvs[idx] = new Vector2(0f, 0.5f); // đơn giản hóa UV cap
+                uvs[idx] = new Vector2(0f, 0.5f);
+                colors[idx] = new Color32(255, 255, 255, capA);
             }
 
-            // fan triangles
             for (int s = 0; s < capSeg; s++)
             {
                 int c = capBase;
@@ -670,14 +735,14 @@ public class GridWavyLineMesh : MonoBehaviour
             }
         }
 
-        // ===== Upload mesh =====
+        // Upload mesh
         mesh.Clear(false);
         mesh.vertices = verts;
         mesh.uv = uvs;
         mesh.triangles = tris;
+        mesh.colors32 = colors; 
         mesh.RecalculateBounds();
     }
-
 
     void BuildPolygonColliderFromRibbon(Vector3[] center)
     {
@@ -692,15 +757,8 @@ public class GridWavyLineMesh : MonoBehaviour
 
         float halfW = Mathf.Max(0.001f, lineWidth * 0.5f);
 
-        // Use SAME smooth normals in LOCAL to match mesh exactly
         EnsureTempArrays(n);
         ComputeSmoothFrames(center, tangents, normals);
-
-        // ---------- Build edges ----------
-        // leftEdge:  i = 0..n-1
-        // rightEdge: i = n-1..0
-        // Start cap (optional): arc from left(0) -> right(0) placed BEFORE leftEdge
-        // To avoid duplicates, when cap enabled we skip i=0 for both edges.
 
         bool cap = roundStartCap;
         int capSeg = cap ? Mathf.Max(2, startCapSegments) : 0;
@@ -708,9 +766,9 @@ public class GridWavyLineMesh : MonoBehaviour
 
         int skip0 = cap ? 1 : 0;
 
-        int leftCount  = n - skip0;    // if cap: start from i=1
-        int rightCount = n - skip0;    // if cap: end at i=1
-        int capCount   = cap ? (capSeg + 1) : 0; // include both ends
+        int leftCount = n - skip0;
+        int rightCount = n - skip0;
+        int capCount = cap ? (capSeg + 1) : 0;
 
         int total = capCount + leftCount + rightCount;
         if (total < 3)
@@ -722,10 +780,8 @@ public class GridWavyLineMesh : MonoBehaviour
         var path = new Vector2[total];
         int k = 0;
 
-        // ---------- 1) Start Cap (arc) ----------
         if (cap)
         {
-            // Use tangent/normal at start in LOCAL
             Vector2 t0 = tangents[0];
             if (t0.sqrMagnitude < 1e-8f) t0 = (Vector2)(center[1] - center[0]);
             t0 = SafeNormalize(t0);
@@ -736,20 +792,14 @@ public class GridWavyLineMesh : MonoBehaviour
 
             Vector2 c0 = (Vector2)center[0];
 
-            // Arc from LEFT -> RIGHT around the "front" (-tangent)
-            // Same parametrization as mesh: angle from +90 to -90
             for (int s = 0; s <= capSeg; s++)
             {
                 float a = Mathf.Lerp(Mathf.PI * 0.5f, -Mathf.PI * 0.5f, (float)s / capSeg);
-
-                // local circle basis: (-t0) is forward to cap, n0 is lateral
                 Vector2 p = c0 + (-t0 * Mathf.Cos(a) + n0 * Mathf.Sin(a)) * capR;
-
                 path[k++] = p;
             }
         }
 
-        // ---------- 2) Left edge forward ----------
         for (int i = skip0; i < n; i++)
         {
             Vector3 nrm = new Vector3(normals[i].x, normals[i].y, 0f);
@@ -757,7 +807,6 @@ public class GridWavyLineMesh : MonoBehaviour
             path[k++] = new Vector2(left.x, left.y);
         }
 
-        // ---------- 3) Right edge backward ----------
         for (int i = n - 1; i >= skip0; i--)
         {
             Vector3 nrm = new Vector3(normals[i].x, normals[i].y, 0f);
@@ -765,18 +814,12 @@ public class GridWavyLineMesh : MonoBehaviour
             path[k++] = new Vector2(right.x, right.y);
         }
 
-        // Safety: ensure k == total
-        if (k != total)
-        {
-            // fallback (shouldn't happen)
-            System.Array.Resize(ref path, k);
-        }
+        if (k != total) System.Array.Resize(ref path, k);
 
         poly.pathCount = 1;
         poly.SetPath(0, path);
         poly.isTrigger = true;
     }
-
 
     void ClearMeshOnly()
     {
@@ -827,7 +870,7 @@ public class GridWavyLineMesh : MonoBehaviour
         return false;
     }
 
-    // ===================== WAVE QUALITY HELPERS =====================
+    // ===================== HELPERS =====================
 
     static Vector2 SafeNormalize(Vector2 v)
     {
@@ -835,7 +878,6 @@ public class GridWavyLineMesh : MonoBehaviour
         return (m < 1e-6f) ? Vector2.right : (v / m);
     }
 
-    // center: points (WORLD or LOCAL)
     static void ComputeSmoothFrames(Vector3[] center, Vector2[] tangents, Vector2[] normals)
     {
         int n = center.Length;
@@ -848,13 +890,11 @@ public class GridWavyLineMesh : MonoBehaviour
             Vector2 t;
             if (i == 0) t = (Vector2)(center[1] - center[0]);
             else if (i == n - 1) t = (Vector2)(center[n - 1] - center[n - 2]);
-            else t = (Vector2)(center[i + 1] - center[i - 1]);  // central difference
+            else t = (Vector2)(center[i + 1] - center[i - 1]);
 
             t = SafeNormalize(t);
 
             Vector2 nPerp = new Vector2(-t.y, t.x);
-
-            // anti-flip
             if (Vector2.Dot(nPerp, prevN) < 0f) nPerp = -nPerp;
 
             tangents[i] = t;
@@ -866,7 +906,7 @@ public class GridWavyLineMesh : MonoBehaviour
     static float CornerWeight(Vector2 tPrev, Vector2 tNext, float sharpness = 2.0f)
     {
         float d = Mathf.Clamp(Vector2.Dot(tPrev, tNext), -1f, 1f);
-        float w = 1f - Mathf.InverseLerp(1f, 0.0f, d); // thẳng=>0, vuông=>1
+        float w = 1f - Mathf.InverseLerp(1f, 0.0f, d);
         return Mathf.Pow(w, Mathf.Max(0.01f, sharpness));
     }
 
@@ -883,15 +923,11 @@ public class GridWavyLineMesh : MonoBehaviour
             tmp[n - 1] = a[n - 1];
 
             for (int i = 1; i < n - 1; i++)
-            {
                 tmp[i] = (a[i - 1] + a[i] * 2f + a[i + 1]) * 0.25f;
-            }
 
             for (int i = 0; i < n; i++) a[i] = tmp[i];
         }
     }
-
-    // ===================== GEOMETRY HELPERS =====================
 
     static List<Vector3> RemoveConsecutiveDuplicates(List<Vector3> pts, float eps = 1e-6f)
     {
@@ -982,36 +1018,6 @@ public class GridWavyLineMesh : MonoBehaviour
         return Vector3.Lerp(pts[lo], pts[hi], tt);
     }
 
-    static Vector3 TangentAtExtended(List<Vector3> pts, List<float> c, float dist)
-    {
-        if (pts == null || pts.Count < 2) return Vector3.right;
-
-        if (dist <= 0f)
-        {
-            Vector3 d0 = pts[1] - pts[0];
-            return (d0.sqrMagnitude < 1e-8f) ? Vector3.right : d0.normalized;
-        }
-
-        float total = c[c.Count - 1];
-        if (dist >= total)
-        {
-            Vector3 d1 = pts[pts.Count - 1] - pts[pts.Count - 2];
-            return (d1.sqrMagnitude < 1e-8f) ? Vector3.right : d1.normalized;
-        }
-
-        int lo = 0, hi = c.Count - 1;
-        while (hi - lo > 1)
-        {
-            int mid = (lo + hi) >> 1;
-            if (c[mid] < dist) lo = mid;
-            else hi = mid;
-        }
-
-        Vector3 d = pts[hi] - pts[lo];
-        if (d.sqrMagnitude < 1e-8f) return Vector3.right;
-        return d.normalized;
-    }
-
     static float ProjectToArcLength(List<Vector3> pts, List<float> cum, Vector3 worldPoint)
     {
         float bestS = 0f;
@@ -1049,7 +1055,6 @@ public class GridWavyLineMesh : MonoBehaviour
         Vector2Int b = turnCells[turnCells.Count - 1];
         Vector2Int d = b - a;
 
-        // Nếu last segment không hợp lệ (trùng nhau) thì fallback
         if (d == Vector2Int.zero)
         {
             headForwardAxisW = Vector3.right;
@@ -1058,18 +1063,14 @@ public class GridWavyLineMesh : MonoBehaviour
             return;
         }
 
-        // Forward: theo hướng đoạn cuối (cardinal)
         if (Mathf.Abs(d.x) >= Mathf.Abs(d.y))
             headForwardAxisW = (d.x >= 0) ? Vector3.right : Vector3.left;
         else
             headForwardAxisW = (d.y >= 0) ? Vector3.up : Vector3.down;
 
-        // Side axis: vuông góc với forward, nhưng CHỐT theo grid (đồng nhất)
-        // Nếu forward là ngang -> side là up; nếu forward là dọc -> side là right
         bool forwardIsVertical = Mathf.Abs(headForwardAxisW.y) > 0.5f;
         headSideAxisW = forwardIsVertical ? Vector3.right : Vector3.up;
 
         headAxisReady = true;
     }
-
 }
