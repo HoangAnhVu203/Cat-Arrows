@@ -351,7 +351,7 @@ MonoBehaviour:
   cornerSharpness: 2
   moveOnClick: 1
   moveSpeedCellsPerSec: 6
-  moveForever: 1
+  moveForever: 0
   extraOutCells: 6
   destroyAfterMove: 1
   destroyDelay: 2
@@ -435,6 +435,10 @@ PrefabInstance:
       propertyPath: headPrefab
       value: 
       objectReference: {fileID: 6370466729488504364, guid: cfb9a33cc673e4be89eb5192865470cf, type: 3}
+    - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
+      propertyPath: moveForever
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
       propertyPath: wavelengthCells
       value: 1
@@ -724,7 +728,7 @@ MonoBehaviour:
   cornerSharpness: 2
   moveOnClick: 1
   moveSpeedCellsPerSec: 6
-  moveForever: 1
+  moveForever: 0
   extraOutCells: 6
   destroyAfterMove: 1
   destroyDelay: 2
@@ -999,7 +1003,7 @@ MonoBehaviour:
   cornerSharpness: 2
   moveOnClick: 1
   moveSpeedCellsPerSec: 6
-  moveForever: 1
+  moveForever: 0
   extraOutCells: 6
   destroyAfterMove: 1
   destroyDelay: 2
@@ -1275,7 +1279,7 @@ MonoBehaviour:
   cornerSharpness: 2
   moveOnClick: 1
   moveSpeedCellsPerSec: 6
-  moveForever: 1
+  moveForever: 0
   extraOutCells: 6
   destroyAfterMove: 1
   destroyDelay: 2
@@ -1549,7 +1553,7 @@ MonoBehaviour:
   cornerSharpness: 2
   moveOnClick: 1
   moveSpeedCellsPerSec: 6
-  moveForever: 1
+  moveForever: 0
   extraOutCells: 6
   destroyAfterMove: 1
   destroyDelay: 2

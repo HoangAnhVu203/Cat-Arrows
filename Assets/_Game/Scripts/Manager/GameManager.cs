@@ -38,6 +38,8 @@ public class GameManager : Singleton<GameManager>
     void Start()
     {
         StartLevel();
+        LevelManager.Instance.LoadFirstLevel();
+        UIManager.Instance.OpenUI<PanelGamePlay>();
     }
 
     // ===================== LEVEL =====================
@@ -153,5 +155,11 @@ public class GameManager : Singleton<GameManager>
             ChangeState(GameState.Win);
         }
     }
+
+    public void SetActiveLineCount(int count)
+    {
+        activeLineCount = Mathf.Max(0, count);
+    }
+
 
 }
