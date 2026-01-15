@@ -354,7 +354,7 @@ MonoBehaviour:
   moveForever: 0
   extraOutCells: 6
   destroyAfterMove: 1
-  destroyDelay: 2
+  destroyDelay: 1
   blockIfAhead: 1
   lineLayerMask:
     serializedVersion: 2
@@ -438,6 +438,10 @@ PrefabInstance:
     - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
       propertyPath: moveForever
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
+      propertyPath: destroyDelay
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
       propertyPath: wavelengthCells
@@ -731,7 +735,7 @@ MonoBehaviour:
   moveForever: 0
   extraOutCells: 6
   destroyAfterMove: 1
-  destroyDelay: 2
+  destroyDelay: 1
   blockIfAhead: 1
   lineLayerMask:
     serializedVersion: 2
@@ -1006,7 +1010,7 @@ MonoBehaviour:
   moveForever: 0
   extraOutCells: 6
   destroyAfterMove: 1
-  destroyDelay: 2
+  destroyDelay: 1
   blockIfAhead: 1
   lineLayerMask:
     serializedVersion: 2
@@ -1282,7 +1286,7 @@ MonoBehaviour:
   moveForever: 0
   extraOutCells: 6
   destroyAfterMove: 1
-  destroyDelay: 2
+  destroyDelay: 1
   blockIfAhead: 1
   lineLayerMask:
     serializedVersion: 2
@@ -1556,7 +1560,7 @@ MonoBehaviour:
   moveForever: 0
   extraOutCells: 6
   destroyAfterMove: 1
-  destroyDelay: 2
+  destroyDelay: 1
   blockIfAhead: 1
   lineLayerMask:
     serializedVersion: 2

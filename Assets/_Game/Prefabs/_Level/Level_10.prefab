@@ -154,6 +154,14 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 6370466729488504364, guid: cfb9a33cc673e4be89eb5192865470cf, type: 3}
     - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
+      propertyPath: moveForever
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
+      propertyPath: destroyDelay
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
       propertyPath: turnCells.Array.size
       value: 18
       objectReference: {fileID: 0}
@@ -442,6 +450,14 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 6370466729488504364, guid: cfb9a33cc673e4be89eb5192865470cf, type: 3}
     - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
+      propertyPath: moveForever
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
+      propertyPath: destroyDelay
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
       propertyPath: turnCells.Array.size
       value: 8
       objectReference: {fileID: 0}
@@ -668,6 +684,14 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 6370466729488504364, guid: cfb9a33cc673e4be89eb5192865470cf, type: 3}
     - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
+      propertyPath: moveForever
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
+      propertyPath: destroyDelay
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
       propertyPath: turnCells.Array.size
       value: 18
       objectReference: {fileID: 0}
@@ -889,6 +913,14 @@ PrefabInstance:
       propertyPath: headPrefab
       value: 
       objectReference: {fileID: 6370466729488504364, guid: cfb9a33cc673e4be89eb5192865470cf, type: 3}
+    - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
+      propertyPath: moveForever
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
+      propertyPath: destroyDelay
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
       propertyPath: turnCells.Array.size
       value: 3
@@ -1116,6 +1148,14 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 6370466729488504364, guid: cfb9a33cc673e4be89eb5192865470cf, type: 3}
     - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
+      propertyPath: moveForever
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
+      propertyPath: destroyDelay
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
       propertyPath: turnCells.Array.size
       value: 15
       objectReference: {fileID: 0}
@@ -1342,6 +1382,14 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 6370466729488504364, guid: cfb9a33cc673e4be89eb5192865470cf, type: 3}
     - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
+      propertyPath: moveForever
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
+      propertyPath: destroyDelay
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
       propertyPath: turnCells.Array.size
       value: 10
       objectReference: {fileID: 0}
@@ -1499,6 +1547,14 @@ PrefabInstance:
       propertyPath: headPrefab
       value: 
       objectReference: {fileID: 6370466729488504364, guid: cfb9a33cc673e4be89eb5192865470cf, type: 3}
+    - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
+      propertyPath: moveForever
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
+      propertyPath: destroyDelay
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
       propertyPath: turnCells.Array.size
       value: 9
