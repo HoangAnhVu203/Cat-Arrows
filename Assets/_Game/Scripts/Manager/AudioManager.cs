@@ -12,6 +12,7 @@ public class AudioManager : Singleton<AudioManager>
     public AudioClip sfxWin;
     public AudioClip sfxLose;
     public AudioClip sfxButton;
+    public AudioClip sfxClick;
 
     void Awake()
     {
@@ -44,6 +45,8 @@ public class AudioManager : Singleton<AudioManager>
     }
 
     // ---- helper ----
+
+    public void PlaySoundClickLine() => PlaySFX(sfxClick);
     public void PlayMergeBall() => PlaySFX(sfxMergeBall);
     public void PlayWin() => PlaySFX(sfxWin);
     public void PlayLose() => PlaySFX(sfxLose);

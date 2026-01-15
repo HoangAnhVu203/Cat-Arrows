@@ -316,6 +316,21 @@ public class GridWavyLineMesh : MonoBehaviour
         // 1) Phải click trúng line
         if (!poly.OverlapPoint(w))
             return;
+        AudioManager.Instance.PlaySoundClickLine();
+        // ===== ERASE MODE =====
+        if (GameManager.Instance != null && GameManager.Instance.EraseMode)
+        {
+            // tắt erase mode sau khi xoá (tuỳ chọn)
+            GameManager.Instance.SetEraseMode(false);
+
+            EraseSelf();
+            return;
+        }
+
+        if (GameManager.Instance != null && GameManager.Instance.ShowPathMode)
+        {
+            GameManager.Instance.SetShowPathMode(false);
+        }
 
         // Click đúng line -> head idle2
         if (head) head.AnimationState.SetAnimation(0, "idle2", true);
@@ -1120,13 +1135,6 @@ public class GridWavyLineMesh : MonoBehaviour
 
         headAxisReady = true;
     }
-
-    void SetColliderEnabled(bool on)
-    {
-        if (!poly) return;
-        poly.enabled = on;
-    }
-
     void EnableCollider()
     {
         if (!poly) return;
@@ -1146,5 +1154,47 @@ public class GridWavyLineMesh : MonoBehaviour
 
         head.AnimationState.SetAnimation(0, "idle1", true);
     }
+
+    void EraseSelf()
+    {
+        if (isMoving) return;
+        if (registeredToGM && GameManager.Instance != null)
+        {
+            GameManager.Instance.UnregisterLine();
+            registeredToGM = false;
+        }
+
+        Destroy(destroyRoot ? destroyRoot.gameObject : gameObject);
+    }
+
+    public bool TryGetPreviewPathWorld(out Vector3[] worldPoints)
+    {
+        worldPoints = null;
+
+        if (basePts == null || basePts.Count < 2 || cum == null || cum.Count < 2 || grid == null)
+            return false;
+
+        Vector3 endPos = PointAtExtended(basePts, cum, totalLen + movingOffset);
+        endPos.z = 0f;
+
+        Vector3 a = basePts[basePts.Count - 2];
+        Vector3 b = basePts[basePts.Count - 1];
+        Vector3 dir = (b - a);
+        dir.z = 0f;
+
+        if (dir.sqrMagnitude < 1e-8f)
+            dir = headForwardAxisW; 
+        dir.Normalize();
+
+        // Độ dài preview
+        float length = Mathf.Max(0.5f, extraOutCells) * grid.cellSize;
+
+        worldPoints = new Vector3[2];
+        worldPoints[0] = endPos;
+        worldPoints[1] = endPos + dir * length;
+
+        return true;
+    }
+
 
 }

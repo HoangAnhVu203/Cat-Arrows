@@ -17,10 +17,14 @@ public class GameManager : Singleton<GameManager>
 
     public event Action<int, int> OnHeartChanged;
     public event Action<GameState> OnStateChanged;
+    public event System.Action<bool> OnShowPathChanged;
 
     private int activeLineCount = 0;
     public bool IsLoadingLevel { get; private set; }
+    public bool EraseMode { get; private set; }
+    public bool ShowPathMode { get; private set; }
     public void SetLoading(bool v) => IsLoadingLevel = v;
+   
 
 
     void Awake()
@@ -135,6 +139,16 @@ public class GameManager : Singleton<GameManager>
         activeLineCount = Mathf.Max(0, count);
     }
 
-    
+    // === Mode Game ===
+    public void SetEraseMode(bool on)
+    {
+        EraseMode = on;
+    }
 
+    public void SetShowPathMode(bool on)
+    {
+        if (ShowPathMode == on) return;
+        ShowPathMode = on;
+        OnShowPathChanged?.Invoke(on);
+    }
 }

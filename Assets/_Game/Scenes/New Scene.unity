@@ -373,6 +373,7 @@ MonoBehaviour:
   sfxWin: {fileID: 0}
   sfxLose: {fileID: 0}
   sfxButton: {fileID: 0}
+  sfxClick: {fileID: 8300000, guid: e3043f81d2a868142a0e39c0db29982a, type: 3}
 --- !u!4 &534172993
 Transform:
   m_ObjectHideFlags: 0
