@@ -306,6 +306,7 @@ public class GridWavyLineMesh : MonoBehaviour
         // 4) Nếu không thể move -> trừ tim 1 lần cho click này
         if (!canMove)
         {
+            EnableCollider();
             if (GameManager.Instance != null)
                 GameManager.Instance.LoseHeart();
             return;
@@ -315,23 +316,25 @@ public class GridWavyLineMesh : MonoBehaviour
         StartMove();
     }
 
-
-
     public void StartMove()
     {
         if (isMoving) return;
         if (basePts == null || basePts.Count < 2) return;
 
+        DisableCollider();    
+
         if (moveCR != null) StopCoroutine(moveCR);
         if (returnCR != null) StopCoroutine(returnCR);
 
-        SetColliderEnabled(false);
+        
         moveCR = StartCoroutine(MoveRoutine());
     }
 
     IEnumerator MoveRoutine()
     {
         isMoving = true;
+        if (!destroyAfterMove)
+            EnableCollider();
         endedByBlock = false;
 
         float speed = moveSpeedCellsPerSec * grid.cellSize;
@@ -390,6 +393,7 @@ public class GridWavyLineMesh : MonoBehaviour
 
         movingOffset = to;
         RebuildVisualAndCollider();
+        EnableCollider();
     }
 
     // ===================== BUILD PATH =====================
@@ -1088,6 +1092,18 @@ public class GridWavyLineMesh : MonoBehaviour
     {
         if (!poly) return;
         poly.enabled = on;
+    }
+
+    void EnableCollider()
+    {
+        if (!poly) return;
+        poly.enabled = true;
+    }
+
+    void DisableCollider()
+    {
+        if (!poly) return;
+        poly.enabled = false;
     }
 
 }
