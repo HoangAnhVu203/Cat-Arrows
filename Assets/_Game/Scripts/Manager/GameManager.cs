@@ -90,10 +90,15 @@ public class GameManager : Singleton<GameManager>
         Debug.Log("[GameState] FAIL");
     }
 
-    void EnterPause()
+    public void EnterPause()
     {
         Time.timeScale = 0f;
         Debug.Log("[GameState] PAUSE");
+    }
+
+    public void EnterResume()
+    {
+        Time.timeScale = 1f;
     }
 
     // ===================== HEART LOGIC =====================
