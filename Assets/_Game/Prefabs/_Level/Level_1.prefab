@@ -352,7 +352,7 @@ MonoBehaviour:
   moveOnClick: 1
   moveSpeedCellsPerSec: 6
   moveForever: 0
-  extraOutCells: 10
+  extraOutCells: 15
   destroyAfterMove: 1
   destroyDelay: 0.1
   blockIfAhead: 1
@@ -445,7 +445,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
       propertyPath: extraOutCells
-      value: 10
+      value: 15
       objectReference: {fileID: 0}
     - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
       propertyPath: wavelengthCells
@@ -737,7 +737,7 @@ MonoBehaviour:
   moveOnClick: 1
   moveSpeedCellsPerSec: 6
   moveForever: 0
-  extraOutCells: 10
+  extraOutCells: 15
   destroyAfterMove: 1
   destroyDelay: 0.1
   blockIfAhead: 1
@@ -1012,7 +1012,7 @@ MonoBehaviour:
   moveOnClick: 1
   moveSpeedCellsPerSec: 6
   moveForever: 0
-  extraOutCells: 10
+  extraOutCells: 15
   destroyAfterMove: 1
   destroyDelay: 0.1
   blockIfAhead: 1
@@ -1288,7 +1288,7 @@ MonoBehaviour:
   moveOnClick: 1
   moveSpeedCellsPerSec: 6
   moveForever: 0
-  extraOutCells: 10
+  extraOutCells: 15
   destroyAfterMove: 1
   destroyDelay: 0.1
   blockIfAhead: 1
@@ -1562,7 +1562,7 @@ MonoBehaviour:
   moveOnClick: 1
   moveSpeedCellsPerSec: 6
   moveForever: 0
-  extraOutCells: 10
+  extraOutCells: 15
   destroyAfterMove: 1
   destroyDelay: 0.1
   blockIfAhead: 1

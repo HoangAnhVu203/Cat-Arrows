@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Spine.Unity;
+using UnityEngine.EventSystems;
+using CandyCoded.HapticFeedback;
 
 [DisallowMultipleComponent]
 [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
@@ -12,7 +14,7 @@ public class GridWavyLineMesh : MonoBehaviour
     public GridManager grid;
     public MeshFilter meshFilter;
     public MeshRenderer meshRenderer;
-    public PolygonCollider2D poly;        // collider theo mesh
+    public PolygonCollider2D poly;        
     public Transform destroyRoot;
 
     [Header("Head (Spine at end)")]
@@ -38,11 +40,8 @@ public class GridWavyLineMesh : MonoBehaviour
 
     [Header("Start Fade (vertex alpha)")]
     public bool startFade = true;
-    [Tooltip("Độ dài đoạn mờ ở đầu (CELL).")]
     [Range(0f, 5f)] public float fadeStartLengthCells = 1.2f;
-    [Tooltip("Alpha tại đúng điểm đầu (0..1).")]
     [Range(0f, 1f)] public float fadeStartAlpha = 0.15f;
-    [Tooltip("Độ cong fade (cao hơn = lên alpha nhanh hơn).")]
     [Range(0.2f, 4f)] public float fadeCurve = 1.6f;
 
     [Header("Wave Params (CELL units)")]
@@ -94,13 +93,9 @@ public class GridWavyLineMesh : MonoBehaviour
     [Range(0.01f, 0.5f)] public float returnStopEpsCells = 0.02f;
 
     [Header("Head Rotation Fix")]
-    [Tooltip("Góc bù thêm cho head (độ). Dùng để khớp hướng mặc định của Spine.")]
     public float headAngleOffset = 0f;
 
-    [Tooltip("Nếu bật: đi sang trái sẽ dùng flipX thay vì quay 180 (tránh bị lật ngược khó chịu).")]
     public bool flipHeadWhenLeft = true;
-
-    [Tooltip("Nếu Spine mặc định nhìn sang TRÁI, bật cái này để đảo logic.")]
     public bool spineFacesLeftByDefault = false;
 
 
@@ -112,7 +107,7 @@ public class GridWavyLineMesh : MonoBehaviour
     Vector3[] verts;
     Vector2[] uvs;
     int[] tris;
-    Color32[] colors; // <==== FADE ALPHA HERE
+    Color32[] colors; // <==== FADE ALPHA 
 
     // path (centerline in world)
     List<Vector3> basePts;
@@ -140,6 +135,7 @@ public class GridWavyLineMesh : MonoBehaviour
     Vector3 headSideAxisW = Vector3.up;       // world
     bool headAxisReady = false;
     bool registeredToGM = false;
+    static readonly List<RaycastResult> _uiHits = new List<RaycastResult>(32);
     bool consumedHeartThisClick = false;
 
     void Awake()
@@ -188,11 +184,46 @@ public class GridWavyLineMesh : MonoBehaviour
         if (isMoving) return;
         if (!grid || !cam) return;
 
+        if (IsPointerBlockedByUI()) return;
+
         if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
             TryPick(Mouse.current.position.ReadValue());
 
         if (Touchscreen.current != null && Touchscreen.current.primaryTouch.press.wasPressedThisFrame)
             TryPick(Touchscreen.current.primaryTouch.position.ReadValue());
+    }
+
+    bool IsPointerBlockedByUI()
+    {
+        if (EventSystem.current == null) return false;
+
+        // --- Mouse ---
+        if (Mouse.current != null)
+        {
+            Vector2 pos = Mouse.current.position.ReadValue();
+            return IsUIHit(pos);
+        }
+
+        // --- Touch ---
+        if (Touchscreen.current != null && Touchscreen.current.primaryTouch.press.isPressed)
+        {
+            Vector2 pos = Touchscreen.current.primaryTouch.position.ReadValue();
+            return IsUIHit(pos);
+        }
+
+        return false;
+    }
+
+    bool IsUIHit(Vector2 screenPos)
+    {
+        var ped = new PointerEventData(EventSystem.current);
+        ped.position = screenPos;
+
+        _uiHits.Clear();
+        EventSystem.current.RaycastAll(ped, _uiHits);
+
+        // Nếu UI element nào đó thực sự nhận raycast => chặn gameplay
+        return _uiHits.Count > 0;
     }
 
     void OnDisable()
@@ -272,6 +303,7 @@ public class GridWavyLineMesh : MonoBehaviour
 
     void TryPick(Vector2 screenPos)
     {
+        if (IsPointerBlockedByUI()) return;
         if (GameManager.Instance != null && GameManager.Instance.CurrentState != GameManager.GameState.GamePlay)
             return;
 
@@ -306,6 +338,7 @@ public class GridWavyLineMesh : MonoBehaviour
         // 4) Nếu không thể move -> trừ tim 1 lần cho click này
         if (!canMove)
         {
+            HapticFeedback.MediumFeedback();
             EnableCollider();
             if (GameManager.Instance != null)
                 GameManager.Instance.LoseHeart();
@@ -1098,12 +1131,20 @@ public class GridWavyLineMesh : MonoBehaviour
     {
         if (!poly) return;
         poly.enabled = true;
+        StartCoroutine(HandleAnim(2f));
     }
 
     void DisableCollider()
     {
         if (!poly) return;
         poly.enabled = false;
+    }
+
+    IEnumerator HandleAnim(float time)
+    {
+        yield return new WaitForSeconds(time);
+
+        head.AnimationState.SetAnimation(0, "idle1", true);
     }
 
 }

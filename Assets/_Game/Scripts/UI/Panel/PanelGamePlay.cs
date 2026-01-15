@@ -67,4 +67,9 @@ public class PanelGamePlay : UICanvas
     {
         LevelManager.Instance.ReplayLevel();
     }
+
+    public void OpenSetiingUI()
+    {
+        UIManager.Instance.OpenUI<PanelSetting>();
+    }
 }
