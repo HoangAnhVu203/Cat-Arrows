@@ -92,6 +92,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PanelWin
   isDestroyOnClose: 0
+  stars:
+  - {fileID: 2165214969605653840}
+  - {fileID: 7276552433786550253}
+  - {fileID: 4477687919346410154}
+  starOn: {fileID: 2608492905780106152, guid: ebe1084d11de445b6a60b98b0e58d0c2, type: 3}
+  starOff: {fileID: 1502935112038917139, guid: 7ba66ebd503e842eaad000f1a655953b, type: 3}
 --- !u!1 &4458082546244100492
 GameObject:
   m_ObjectHideFlags: 0

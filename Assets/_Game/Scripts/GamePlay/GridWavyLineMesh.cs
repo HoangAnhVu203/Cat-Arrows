@@ -165,7 +165,6 @@ public class GridWavyLineMesh : MonoBehaviour
 
         if (material) meshRenderer.sharedMaterial = material;
     }
-
     void OnEnable()
     {
         if (!registeredToGM && GameManager.Instance != null)
@@ -272,42 +271,50 @@ public class GridWavyLineMesh : MonoBehaviour
     }
 
     void TryPick(Vector2 screenPos)
-{
-    if (GameManager.Instance != null && GameManager.Instance.CurrentState != GameManager.GameState.GamePlay)
-        return;
-
-    Vector3 w = cam.ScreenToWorldPoint(screenPos);
-    w.z = 0f;
-
-    if (!(poly && poly.OverlapPoint(w)))
-        return;
-
-    // Click đúng line -> head idle2
-    if (head) head.AnimationState.SetAnimation(0, "idle2", true);
-
-    // ===== RULE: nếu bị block ngay khi click -> trừ tim và (tuỳ) không cho chạy =====
-    if (blockIfAhead)
     {
-        consumedHeartThisClick = false;
+        if (GameManager.Instance != null && GameManager.Instance.CurrentState != GameManager.GameState.GamePlay)
+            return;
 
-        float cs = grid ? grid.cellSize : 1f;
-        float step = Mathf.Max(0.01f, probeAheadCells) * cs;
+        if (!grid || !cam || !poly)
+            return;
 
-        bool blocked = IsBlockedStep(movingOffset, movingOffset + step);
+        Vector3 w = cam.ScreenToWorldPoint(screenPos);
+        w.z = 0f;
 
-        if (blocked)
+        // 1) Phải click trúng line
+        if (!poly.OverlapPoint(w))
+            return;
+
+        // Click đúng line -> head idle2
+        if (head) head.AnimationState.SetAnimation(0, "idle2", true);
+
+        bool canMove = true;
+
+        // 2) Nếu base path không hợp lệ thì coi như không move được
+        if (basePts == null || basePts.Count < 2)
+            canMove = false;
+
+        // 3) Kiểm tra block ngay phía trước
+        if (canMove && blockIfAhead)
         {
-            if (!consumedHeartThisClick && GameManager.Instance != null)
-            {
+            float cs = grid.cellSize;
+            float step = Mathf.Max(0.01f, probeAheadCells) * cs;
+            bool blocked = IsBlockedStep(movingOffset, movingOffset + step);
+            if (blocked) canMove = false;
+        }
+
+        // 4) Nếu không thể move -> trừ tim 1 lần cho click này
+        if (!canMove)
+        {
+            if (GameManager.Instance != null)
                 GameManager.Instance.LoseHeart();
-                consumedHeartThisClick = true;
-            }
             return;
         }
+
+        // 5) Có thể move -> chạy
+        StartMove();
     }
-    StartMove();
-    
-}
+
 
 
     public void StartMove()
@@ -337,6 +344,8 @@ public class GridWavyLineMesh : MonoBehaviour
             if (blockIfAhead && IsBlockedStep(movingOffset, nextOffset))
             {
                 endedByBlock = true;
+                if (GameManager.Instance != null)
+                    GameManager.Instance.LoseHeart();
                 
                 if (returnToStartOnBlock)
                 {

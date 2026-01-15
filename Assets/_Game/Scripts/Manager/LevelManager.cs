@@ -1,43 +1,65 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class LevelManager : Singleton<LevelManager>
 {
-    [Header("Levels (Prefab list in order)")]
     [SerializeField] private List<GameObject> levels = new List<GameObject>();
-
-    [Header("Root to spawn levels under (only level objects!)")]
     [SerializeField] private Transform levelRoot;
-
-    [Header("Optional")]
     [SerializeField] private float loadDelay = 0.05f;
+    [SerializeField] private bool saveProgress = true;
 
-    // ===================== RUNTIME =====================
-    private int currentLevelIndex = 0; // 0-based
+    private int currentLevelIndex = 0;
     private GameObject currentLevelInstance;
     private Coroutine loadCR;
 
-    // ===================== PUBLIC API =====================
     public int CurrentLevelNumber => currentLevelIndex + 1;
-    public int LastLevelNumber => Mathf.Max(1, levels.Count);
-    public int CurrentLevelIndex => currentLevelIndex;
+    public int TotalLevels => levels != null ? levels.Count : 0;
 
-    public void LoadFirstLevel() => LoadLevelByIndex(0);
+    public event Action<int, int> OnLevelLoaded;
 
-    public void LoadLevelNumber(int levelNumber)
+    // ===================== SAVE (ADDED) =====================
+    private const string PREF_LEVEL_INDEX = "LM_CURRENT_LEVEL_INDEX";
+
+    /// <summary>
+    /// Gọi hàm này khi mở game để load level đã lưu (nếu có).
+    /// Nếu chưa từng lưu thì sẽ load level 0.
+    /// </summary>
+    public void LoadSavedLevel()
     {
-        if (levels == null || levels.Count == 0) return;
-        int idx = Mathf.Clamp(levelNumber - 1, 0, levels.Count - 1);
-        LoadLevelByIndex(idx);
+        if (levels == null || levels.Count == 0)
+        {
+            Debug.LogError("[LevelManager] Levels list is empty!");
+            return;
+        }
+        if (!saveProgress)
+        {
+            LoadLevelByIndex(0);
+            return;
+        }
+
+        int saved = PlayerPrefs.GetInt(PREF_LEVEL_INDEX, 0);
+        saved = Mathf.Clamp(saved, 0, levels.Count - 1);
+
+        LoadLevelByIndex(saved); // giữ nguyên flow cũ
     }
+
+    private void SaveCurrentLevelIndex()
+    {
+        if (!saveProgress) return;
+        PlayerPrefs.SetInt(PREF_LEVEL_INDEX, currentLevelIndex);
+        PlayerPrefs.Save();
+    }
+
+    // ===================== OLD API (KEEP) =====================
+    public void LoadFirstLevel() => LoadLevelByIndex(0);
 
     public void NextLevel()
     {
         if (levels == null || levels.Count == 0) return;
-
         int next = currentLevelIndex + 1;
-        if (next >= levels.Count) next = 0; // LOOP
+        if (next >= levels.Count) next = 0;
         LoadLevelByIndex(next);
     }
 
@@ -47,16 +69,6 @@ public class LevelManager : Singleton<LevelManager>
         LoadLevelByIndex(currentLevelIndex);
     }
 
-    public void ClearLevelOnly()
-    {
-        StopLoading();
-        ClearCurrentLevel();
-        // nếu muốn reset count khi clear:
-        if (GameManager.Instance != null)
-            GameManager.Instance.SetActiveLineCount(0);
-    }
-
-    // ===================== CORE LOAD =====================
     private void LoadLevelByIndex(int idx)
     {
         if (levels == null || levels.Count == 0)
@@ -68,58 +80,60 @@ public class LevelManager : Singleton<LevelManager>
         idx = Mathf.Clamp(idx, 0, levels.Count - 1);
         currentLevelIndex = idx;
 
-        StopLoading();
-        loadCR = StartCoroutine(LoadLevelCR(idx));
-    }
+        // ===== SAVE LEVEL INDEX (ADDED) =====
+        SaveCurrentLevelIndex();
 
-    private void StopLoading()
-    {
-        if (loadCR != null)
-        {
-            StopCoroutine(loadCR);
-            loadCR = null;
-        }
+        if (loadCR != null) StopCoroutine(loadCR);
+        loadCR = StartCoroutine(LoadLevelCR(idx));
     }
 
     private IEnumerator LoadLevelCR(int idx)
     {
-        // 1) clear old
+        // ===== BẮT ĐẦU LOAD LEVEL =====
+        if (GameManager.Instance != null)
+            GameManager.Instance.SetLoading(true);
+
+        // 1) Xoá level cũ (ở đây UnregisterLine có thể bị gọi)
         ClearCurrentLevel();
 
-        // 2) delay / 1 frame
-        if (loadDelay > 0f) yield return new WaitForSeconds(loadDelay);
-        else yield return null;
+        // 2) Delay (nếu có)
+        if (loadDelay > 0f)
+            yield return new WaitForSeconds(loadDelay);
+        else
+            yield return null;
 
-        // 3) spawn new
+        // 3) Root
         if (!levelRoot) levelRoot = transform;
 
+        // 4) Instantiate level mới
         var prefab = levels[idx];
         if (!prefab)
         {
             Debug.LogError($"[LevelManager] Level prefab at index {idx} is NULL.");
+            if (GameManager.Instance != null)
+                GameManager.Instance.SetLoading(false);
             yield break;
         }
 
         currentLevelInstance = Instantiate(prefab, levelRoot);
         currentLevelInstance.name = $"Level_{idx + 1:00}";
 
-        // 4) count lines (IMPORTANT: GridWavyLineMesh should NOT auto-Register)
-        int lineCount = 0;
-        var lines = currentLevelInstance.GetComponentsInChildren<GridWavyLineMesh>(true);
-        if (lines != null) lineCount = lines.Length;
-
+        // 5) Reset state + heart + line count
         if (GameManager.Instance != null)
-        {
-            GameManager.Instance.StartLevel();                 
-            GameManager.Instance.SetActiveLineCount(lineCount); 
-        }
+            GameManager.Instance.StartLevel();
 
-        Debug.Log($"[LevelManager] Loaded Level {idx + 1}/{levels.Count} | Lines: {lineCount}");
+        // 6) Báo UI
+        OnLevelLoaded?.Invoke(CurrentLevelNumber, TotalLevels);
+
+        Debug.Log($"[LevelManager] Loaded Level {idx + 1}/{levels.Count}");
+
+        // ===== KẾT THÚC LOAD LEVEL =====
+        if (GameManager.Instance != null)
+            GameManager.Instance.SetLoading(false);
 
         loadCR = null;
     }
 
-    // ===================== CLEAR =====================
     private void ClearCurrentLevel()
     {
         if (currentLevelInstance != null)
@@ -128,13 +142,10 @@ public class LevelManager : Singleton<LevelManager>
             currentLevelInstance = null;
         }
 
-        // bảo vệ: chỉ xoá children của levelRoot (và levelRoot chỉ chứa level)
         if (levelRoot != null)
         {
             for (int i = levelRoot.childCount - 1; i >= 0; i--)
-            {
                 Destroy(levelRoot.GetChild(i).gameObject);
-            }
         }
     }
 }

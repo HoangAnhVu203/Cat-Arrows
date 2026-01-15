@@ -1,29 +1,27 @@
+using System;
 using UnityEngine;
 
 public class GameManager : Singleton<GameManager>
 {
-    // ===================== STATE =====================
+    public enum GameState { GamePlay, Win, Fail, Pause }
 
-    public enum GameState
-    {
-        GamePlay,
-        Win,
-        Fail,
-        Pause
-    }
     private GameState currentState = GameState.GamePlay;
     public GameState CurrentState => currentState;
 
-
-    // ===================== HEART =====================
-    private int maxHeart = 3;
+    [Header("Heart")]
+    [SerializeField] private int maxHeart = 3;
     private int currentHeart;
 
-    // ===================== LINE COUNT =====================
+    public int MaxHeart => maxHeart;
+    public int CurrentHeart => currentHeart;
+
+    public event Action<int, int> OnHeartChanged;
+    public event Action<GameState> OnStateChanged;
 
     private int activeLineCount = 0;
+    public bool IsLoadingLevel { get; private set; }
+    public void SetLoading(bool v) => IsLoadingLevel = v;
 
-    // ===================== UNITY =====================
 
     void Awake()
     {
@@ -37,46 +35,35 @@ public class GameManager : Singleton<GameManager>
 
     void Start()
     {
-        StartLevel();
-        LevelManager.Instance.LoadFirstLevel();
+        // Lưu ý: StartLevel sẽ bắn event, nên UI sẽ update ngay.
+        LevelManager.Instance.LoadSavedLevel();
         UIManager.Instance.OpenUI<PanelGamePlay>();
     }
 
     // ===================== LEVEL =====================
-
     public void StartLevel()
     {
-        currentHeart = maxHeart;
-        activeLineCount = 0;
-
+        currentHeart = maxHeart; 
         ChangeState(GameState.GamePlay);
+
+        // bắn event để UI update
+        OnHeartChanged?.Invoke(currentHeart, maxHeart);
     }
 
     // ===================== STATE MACHINE =====================
-
     public void ChangeState(GameState newState)
     {
         if (currentState == newState) return;
-
         currentState = newState;
+
+        OnStateChanged?.Invoke(currentState);
 
         switch (currentState)
         {
-            case GameState.GamePlay:
-                EnterGamePlay();
-                break;
-
-            case GameState.Win:
-                EnterWin();
-                break;
-
-            case GameState.Fail:
-                EnterFail();
-                break;
-
-            case GameState.Pause:
-                EnterPause();
-                break;
+            case GameState.GamePlay: EnterGamePlay(); break;
+            case GameState.Win: EnterWin(); break;
+            case GameState.Fail: EnterFail(); break;
+            case GameState.Pause: EnterPause(); break;
         }
     }
 
@@ -84,7 +71,6 @@ public class GameManager : Singleton<GameManager>
     {
         Time.timeScale = 1f;
         UIManager.Instance.OpenUI<PanelGamePlay>();
-
         Debug.Log("[GameState] GamePlay");
     }
 
@@ -107,53 +93,36 @@ public class GameManager : Singleton<GameManager>
     void EnterPause()
     {
         Time.timeScale = 0f;
-
         Debug.Log("[GameState] PAUSE");
     }
 
     // ===================== HEART LOGIC =====================
-
-    /// <summary>
-    /// Gọi khi line bị block
-    /// </summary>
     public void LoseHeart()
     {
         if (currentState != GameState.GamePlay) return;
 
-        currentHeart--;
-        currentHeart = Mathf.Max(0, currentHeart);
+        currentHeart = Mathf.Max(0, currentHeart - 1);
+
+        OnHeartChanged?.Invoke(currentHeart, maxHeart);
 
         Debug.Log($"Heart left: {currentHeart}");
 
         if (currentHeart <= 0)
-        {
             ChangeState(GameState.Fail);
-        }
     }
-
-    // ===================== LINE MANAGEMENT =====================
-
-    /// <summary>
-    /// Line gọi khi spawn
-    /// </summary>
     public void RegisterLine()
     {
         activeLineCount++;
     }
 
-    /// <summary>
-    /// Line gọi khi destroy / bay ra ngoài
-    /// </summary>
+    // ===================== LINE MANAGEMENT =====================
     public void UnregisterLine()
     {
         activeLineCount = Mathf.Max(0, activeLineCount - 1);
 
-        if (currentState == GameState.GamePlay &&
-            currentHeart > 0 &&
-            activeLineCount == 0)
-        {
+        if (IsLoadingLevel) return;
+        if (currentState == GameState.GamePlay && currentHeart > 0 && activeLineCount == 0)
             ChangeState(GameState.Win);
-        }
     }
 
     public void SetActiveLineCount(int count)
@@ -161,5 +130,6 @@ public class GameManager : Singleton<GameManager>
         activeLineCount = Mathf.Max(0, count);
     }
 
+    
 
 }
