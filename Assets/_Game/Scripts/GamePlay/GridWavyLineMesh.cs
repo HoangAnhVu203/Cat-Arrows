@@ -325,6 +325,7 @@ public class GridWavyLineMesh : MonoBehaviour
         if (moveCR != null) StopCoroutine(moveCR);
         if (returnCR != null) StopCoroutine(returnCR);
 
+        SetColliderEnabled(false);
         moveCR = StartCoroutine(MoveRoutine());
     }
 
@@ -1081,6 +1082,12 @@ public class GridWavyLineMesh : MonoBehaviour
         headSideAxisW = forwardIsVertical ? Vector3.right : Vector3.up;
 
         headAxisReady = true;
+    }
+
+    void SetColliderEnabled(bool on)
+    {
+        if (!poly) return;
+        poly.enabled = on;
     }
 
 }
