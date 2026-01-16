@@ -13,6 +13,9 @@ public class PanelGamePlay : UICanvas
     [SerializeField] private List<Image> heartIcons;
 
     List<LineRenderer> previewLines = new();
+    Coroutine hintCR;
+    GridWavyLineMesh hintedLine;
+    LineRenderer hintPathLR;
 
     void OnEnable()
     {
@@ -20,6 +23,7 @@ public class PanelGamePlay : UICanvas
         {
             GameManager.Instance.OnHeartChanged += HandleHeartChanged;
             GameManager.Instance.OnShowPathChanged += HandleShowPathChanged;
+            GameManager.Instance.OnHintChanged += HandleHintChanged;
         }
             
 
@@ -35,12 +39,15 @@ public class PanelGamePlay : UICanvas
         {
             GameManager.Instance.OnHeartChanged -= HandleHeartChanged;
             GameManager.Instance.OnShowPathChanged -= HandleShowPathChanged;
+            GameManager.Instance.OnHintChanged -= HandleHintChanged;
         }
             
 
         if (LevelManager.Instance != null)
             LevelManager.Instance.OnLevelLoaded -= HandleLevelLoaded;
 
+        StopHintLoop();
+        ClearHintVisual();
     }
 
     private void RefreshAll()
@@ -105,6 +112,16 @@ public class PanelGamePlay : UICanvas
         ));
     }
 
+    public void OnHintButtonClick()
+    {
+        bool next = !GameManager.Instance.HintMode;
+        GameManager.Instance.SetHintMode(next);
+
+        StartCoroutine(ScaleButton(
+            UnityEngine.EventSystems.EventSystem.current.currentSelectedGameObject
+                .transform as RectTransform
+        ));
+    }
 
     //===Helper===
     IEnumerator ScaleButton(RectTransform rt)
@@ -144,35 +161,57 @@ public class PanelGamePlay : UICanvas
         var lines = FindObjectsOfType<GridWavyLineMesh>(true);
         if (lines == null || lines.Length == 0) return;
 
-        Material mat = new Material(Shader.Find("Sprites/Default"));
+        // Lấy root kéo: ưu tiên grid của line đầu tiên, fallback nếu không có
+        Transform root = null;
+        if (lines[0] != null && lines[0].grid != null) root = lines[0].grid.transform;
+        if (root == null)
+        {
+            var goRoot = GameObject.Find("Root");
+            if (goRoot) root = goRoot.transform;
+        }
 
+        var mat = new Material(Shader.Find("Sprites/Default"));
+        Color gray = new Color(0.9f, 0.9f, 0.9f, 0.8f);
 
         foreach (var l in lines)
         {
-            if (!l.TryGetPreviewPathWorld(out var pts)) continue;
+            if (l == null) continue;
+            if (!l.TryGetPreviewPathWorld(out var ptsW) || ptsW == null || ptsW.Length < 2) continue;
+
+            // nếu mỗi line thuộc 1 grid khác nhau thì ưu tiên grid của chính line đó
+            Transform parent = (l.grid != null) ? l.grid.transform : root;
+            if (parent == null) continue;
 
             GameObject go = new GameObject("PathPreview");
-            go.transform.SetParent(GameObject.Find("Root").transform, false);
+            go.transform.SetParent(parent, false);
 
             var lr = go.AddComponent<LineRenderer>();
-
             lr.material = mat;
-            lr.useWorldSpace = true;
-            lr.positionCount = pts.Length;
-            lr.SetPositions(pts);
 
-            lr.startWidth = 0.04f;
-            lr.endWidth = 0.04f;
+            // QUAN TRỌNG: dùng local space để parent kéo là path kéo theo chắc chắn
+            lr.useWorldSpace = false;
+
+            lr.positionCount = ptsW.Length;
+
+            // Convert WORLD -> LOCAL theo parent
+            for (int i = 0; i < ptsW.Length; i++)
+                ptsW[i] = parent.InverseTransformPoint(ptsW[i]);
+
+            lr.SetPositions(ptsW);
+
+            lr.startWidth = 0.08f;
+            lr.endWidth = 0.08f;
             lr.numCapVertices = 4;
             lr.numCornerVertices = 4;
             lr.sortingOrder = -1;
 
-            Color gray = new Color(0.6f, 0.6f, 0.6f, 1f);
             lr.startColor = gray;
             lr.endColor = gray;
+
             previewLines.Add(lr);
         }
     }
+
 
     void ClearPreviewPaths()
     {
@@ -188,6 +227,130 @@ public class PanelGamePlay : UICanvas
         if (on) BuildPreviewPaths();
         else ClearPreviewPaths();
     }
+
+    void HandleHintChanged(bool on)
+    {
+        if (on)
+        {
+            if (GameManager.Instance != null && GameManager.Instance.ShowPathMode)
+                GameManager.Instance.SetShowPathMode(false);
+
+            StartHintLoop();
+        }
+        else
+        {
+            StopHintLoop();
+            ClearHintVisual();
+        }
+    }
+
+    void StartHintLoop()
+    {
+        StopHintLoop();
+        hintCR = StartCoroutine(HintLoop());
+    }
+
+    void StopHintLoop()
+    {
+        if (hintCR != null) StopCoroutine(hintCR);
+        hintCR = null;
+    }
+
+    IEnumerator HintLoop()
+    {
+        WaitForSeconds w = new WaitForSeconds(0.25f);
+
+        while (GameManager.Instance != null && GameManager.Instance.HintMode)
+        {
+            PickAndShowHint();
+            yield return w;
+        }
+    }
+    
+    void PickAndShowHint()
+    {
+        var lines = FindObjectsOfType<GridWavyLineMesh>(true);
+        GridWavyLineMesh pick = null;
+
+        // chọn line đầu tiên có thể đi (không bị chặn)
+        foreach (var l in lines)
+        {
+            if (!l || !l.gameObject.activeInHierarchy) continue;
+            if (l.CanExitWithoutBlock_ForHint())
+            {
+                pick = l;
+                break;
+            }
+        }
+
+        if (pick == hintedLine) return;
+
+        ClearHintVisual();
+
+        hintedLine = pick;
+        if (!hintedLine) return;
+
+        hintedLine.SetHintHighlight(true);
+        ShowHintPath(hintedLine);
+    }
+
+    void ShowHintPath(GridWavyLineMesh line)
+    {
+        if (line == null) return;
+        if (!line.TryGetPreviewPathWorld(out var ptsW) || ptsW == null || ptsW.Length < 2) return;
+
+        Transform parent = (line.grid != null) ? line.grid.transform : null;
+        if (parent == null) return;
+
+        if (hintPathLR == null)
+        {
+            var go = new GameObject("HintPath");
+            go.transform.SetParent(parent, false);
+
+            hintPathLR = go.AddComponent<LineRenderer>();
+            hintPathLR.useWorldSpace = false; // local để kéo theo
+            hintPathLR.material = new Material(Shader.Find("Sprites/Default"));
+            hintPathLR.numCapVertices = 4;
+            hintPathLR.numCornerVertices = 4;
+            hintPathLR.startWidth = 0.08f;
+            hintPathLR.endWidth = 0.08f;
+            hintPathLR.sortingOrder = -1;
+
+            // xanh lá (nhạt vừa phải)
+            Color green = new Color(0.2f, 0.9f, 0.25f, 0.95f);
+            hintPathLR.startColor = green;
+            hintPathLR.endColor = green;
+        }
+        else
+        {
+            // Nếu hintPathLR đang nằm ở parent khác (đổi level / đổi grid) -> re-parent lại
+            if (hintPathLR.transform.parent != parent)
+                hintPathLR.transform.SetParent(parent, false);
+        }
+
+        hintPathLR.positionCount = ptsW.Length;
+
+        // Convert WORLD -> LOCAL theo parent
+        for (int i = 0; i < ptsW.Length; i++)
+            ptsW[i] = parent.InverseTransformPoint(ptsW[i]);
+
+        hintPathLR.SetPositions(ptsW);
+    }
+
+
+    void ClearHintVisual()
+    {
+        if (hintedLine != null) hintedLine.SetHintHighlight(false);
+        hintedLine = null;
+
+        if (hintPathLR != null)
+        {
+            Destroy(hintPathLR.gameObject);
+            hintPathLR = null;
+        }
+    }
+
+
 
 
 }

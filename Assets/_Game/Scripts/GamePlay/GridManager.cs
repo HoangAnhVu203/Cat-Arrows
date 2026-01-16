@@ -16,9 +16,16 @@ public class GridManager : MonoBehaviour
     public int gridSortingOrder = 0;
     public Material lineMaterial;
 
-    private readonly Dictionary<Vector2Int, MonoBehaviour> occupied = new();
+    [Header("Runtime Grid Dots")]
+    public bool runtimeDotsOnly = true;
+    public float dotSize = 0.08f;
+    public Sprite dotSprite;                 
+    public int dotSortingOrder = -1;
+    public Color dotColor = Color.grey;
 
+    private readonly Dictionary<Vector2Int, MonoBehaviour> occupied = new();
     private readonly List<LineRenderer> runtimeLines = new();
+    private readonly List<GameObject> runtimeDots = new();
 
     // ================== GRID API ==================
     public Vector3 CellToWorld(Vector2Int cell)
@@ -101,14 +108,28 @@ public class GridManager : MonoBehaviour
         BuildFromScene();
 
         if (drawRuntimeGrid)
-            BuildRuntimeGrid();
+        {
+            if (runtimeDotsOnly) BuildRuntimeDots();
+            else BuildRuntimeGrid();
+        }
+            
     }
 
 #if UNITY_EDITOR
     private void OnValidate()
     {
         if (!Application.isPlaying) return;
-        if (drawRuntimeGrid) BuildRuntimeGrid();
+        if (drawRuntimeGrid)
+        {
+            if (runtimeDotsOnly) BuildRuntimeDots();
+            else BuildRuntimeGrid();
+        }
+        else
+        {
+            ClearRuntimeGrid();
+            ClearRuntimeDots();
+        }
+
     }
 #endif
 
@@ -163,6 +184,7 @@ public class GridManager : MonoBehaviour
                 Destroy(runtimeLines[i].gameObject);
         }
         runtimeLines.Clear();
+        ClearRuntimeDots();
     }
 
     private void OnDrawGizmos()
@@ -193,4 +215,74 @@ public class GridManager : MonoBehaviour
             Gizmos.DrawSphere(CellToWorld(new Vector2Int(x, y)), r);
 #endif
     }
+
+    void BuildRuntimeDots()
+        {
+            ClearRuntimeGrid();   
+            ClearRuntimeDots();
+
+            Sprite spriteToUse = dotSprite != null ? dotSprite : GenerateCircleSprite();
+
+            for (int x = 0; x < width; x++)
+            {
+                for (int y = 0; y < height; y++)
+                {
+                    Vector3 p = CellToWorld(new Vector2Int(x, y));
+                    var go = new GameObject($"GridDot_{x}_{y}");
+                    go.transform.SetParent(transform, false);
+                    go.transform.position = p;
+
+                    var sr = go.AddComponent<SpriteRenderer>();
+                    sr.sprite = spriteToUse;
+                    sr.color = dotColor;
+                    sr.sortingOrder = dotSortingOrder;
+
+                    // scale theo world units
+                    go.transform.localScale = Vector3.one * dotSize;
+
+                    runtimeDots.Add(go);
+                }
+            }
+        }
+
+        void ClearRuntimeDots()
+        {
+            for (int i = 0; i < runtimeDots.Count; i++)
+            {
+                if (runtimeDots[i] != null)
+                    Destroy(runtimeDots[i]);
+            }
+            runtimeDots.Clear();
+        }
+
+        Sprite GenerateCircleSprite(int size = 64)
+        {
+            // Tạo texture tròn đơn giản
+            Texture2D tex = new Texture2D(size, size, TextureFormat.ARGB32, false);
+            tex.filterMode = FilterMode.Bilinear;
+            tex.wrapMode = TextureWrapMode.Clamp;
+
+            Color clear = new Color(1, 1, 1, 0);
+            Color white = Color.white;
+
+            float r = (size - 1) * 0.5f;
+            float r2 = r * r;
+            Vector2 c = new Vector2(r, r);
+
+            for (int y = 0; y < size; y++)
+            {
+                for (int x = 0; x < size; x++)
+                {
+                    float dx = x - c.x;
+                    float dy = y - c.y;
+                    float d2 = dx * dx + dy * dy;
+                    tex.SetPixel(x, y, d2 <= r2 ? white : clear);
+                }
+            }
+            tex.Apply();
+
+            // pixelsPerUnit = size để scale bằng transform.localScale dễ
+            return Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), size);
+        }
+
 }

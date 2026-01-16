@@ -11,9 +11,22 @@ public class PanelWin : UICanvas
     [SerializeField] private Sprite starOn;
     [SerializeField] private Sprite starOff;
 
+    [SerializeField] private Text winTxt;
+    string[] winMessages =
+    {
+        "Well Done",
+        "Excellent",
+        "Great Job",
+        "Awesome",
+        "Perfect",
+        "Nice Move",
+        "Fantastic"
+    };
+
     void OnEnable()
     {
         RefreshStars();
+        RefreshWinText();
     }
 
     public void RefreshStars()
@@ -24,7 +37,7 @@ public class PanelWin : UICanvas
         if (GameManager.Instance != null)
             heartLeft = Mathf.Clamp(GameManager.Instance.CurrentHeart, 0, stars.Count);
 
-        // Cách A: bật/tắt sao
+        // option 1: bật/tắt sao
         if (starOn == null || starOff == null)
         {
             for (int i = 0; i < stars.Count; i++)
@@ -33,7 +46,7 @@ public class PanelWin : UICanvas
                 stars[i].enabled = (i < heartLeft);
             }
         }
-        // Cách B: đổi sprite sao sáng/sao rỗng
+        // option 2: đổi sprite sao sáng/sao rỗng
         else
         {
             for (int i = 0; i < stars.Count; i++)
@@ -51,4 +64,17 @@ public class PanelWin : UICanvas
        LevelManager.Instance.NextLevel();
        Destroy(gameObject);
    }
+
+    void RefreshWinText()
+    {
+        if (winTxt == null || winMessages == null || winMessages.Length == 0)
+            return;
+
+        int idx = Random.Range(0, winMessages.Length);
+        winTxt.text = winMessages[idx];
+    }
+
+
+
+
 }

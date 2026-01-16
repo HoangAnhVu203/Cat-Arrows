@@ -49,10 +49,15 @@ MonoBehaviour:
   cellSize: 0.5
   origin: {x: -1.75, y: -1.75}
   drawGizmos: 1
-  drawRuntimeGrid: 0
+  drawRuntimeGrid: 1
   lineWidth: 0.03
   gridSortingOrder: 0
   lineMaterial: {fileID: 0}
+  runtimeDotsOnly: 1
+  dotSize: 0.08
+  dotSprite: {fileID: 0}
+  dotSortingOrder: -1
+  dotColor: {r: 1, g: 0.9411765, b: 0.9411765, a: 1}
 --- !u!1 &3661455767188800537
 GameObject:
   m_ObjectHideFlags: 0
@@ -170,7 +175,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
       propertyPath: fadeStartAlpha
-      value: 0.4
+      value: 0.65
       objectReference: {fileID: 0}
     - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
       propertyPath: wavelengthCells
@@ -388,7 +393,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
       propertyPath: fadeStartAlpha
-      value: 0.4
+      value: 0.65
       objectReference: {fileID: 0}
     - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
       propertyPath: wavelengthCells
@@ -618,7 +623,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
       propertyPath: fadeStartAlpha
-      value: 0.4
+      value: 0.65
       objectReference: {fileID: 0}
     - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
       propertyPath: wavelengthCells
@@ -844,7 +849,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
       propertyPath: fadeStartAlpha
-      value: 0.4
+      value: 0.65
       objectReference: {fileID: 0}
     - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
       propertyPath: wavelengthCells
@@ -1070,7 +1075,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
       propertyPath: fadeStartAlpha
-      value: 0.4
+      value: 0.65
       objectReference: {fileID: 0}
     - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
       propertyPath: wavelengthCells
@@ -1300,7 +1305,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
       propertyPath: fadeStartAlpha
-      value: 0.4
+      value: 0.65
       objectReference: {fileID: 0}
     - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
       propertyPath: wavelengthCells

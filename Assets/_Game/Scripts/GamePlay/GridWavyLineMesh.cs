@@ -102,15 +102,19 @@ public class GridWavyLineMesh : MonoBehaviour
     // ===================== runtime =====================
 
     Camera cam;
-
     Mesh mesh;
     Vector3[] verts;
     Vector2[] uvs;
     int[] tris;
     Color32[] colors; // <==== FADE ALPHA 
+    int _hintSortBackup;
+    bool _hinted;
+    int _hintHeadSortBackup;
+    Renderer _headRenderer;
 
     // path (centerline in world)
-    List<Vector3> basePts;
+    // List<Vector3> basePts;
+    List<Vector3> basePtsLocal;
     List<float> cum;
     float totalLen;
 
@@ -246,14 +250,16 @@ public class GridWavyLineMesh : MonoBehaviour
     void UpdateHeadAtEnd_NoWave()
     {
         if (!head) return;
-        if (!grid || basePts == null || basePts.Count < 2) return;
+        if (!grid || basePtsLocal == null || basePtsLocal.Count < 2) return;
         if (!headAxisReady) CacheHeadAxesFromLastSegment();
 
         float cs = grid.cellSize;
 
         float sEnd = totalLen + movingOffset;
-        Vector3 p = PointAtExtended(basePts, cum, sEnd);
+        Vector3 pL = PointAtExtended(basePtsLocal, cum, sEnd);
+        Vector3 p = transform.TransformPoint(pL);
         p.z = 0f;
+
 
         p += headForwardAxisW * (headForwardOffsetCells * cs);
         p += headSideAxisW * (headSideOffsetCells * cs);
@@ -320,16 +326,19 @@ public class GridWavyLineMesh : MonoBehaviour
         // ===== ERASE MODE =====
         if (GameManager.Instance != null && GameManager.Instance.EraseMode)
         {
-            // tắt erase mode sau khi xoá (tuỳ chọn)
             GameManager.Instance.SetEraseMode(false);
-
             EraseSelf();
             return;
         }
-
+        //===ShowPath===
         if (GameManager.Instance != null && GameManager.Instance.ShowPathMode)
         {
             GameManager.Instance.SetShowPathMode(false);
+        }
+        //===Hint===
+        if (GameManager.Instance != null && GameManager.Instance.HintMode)
+        {
+            GameManager.Instance.SetHintMode(false);
         }
 
         // Click đúng line -> head idle2
@@ -338,7 +347,7 @@ public class GridWavyLineMesh : MonoBehaviour
         bool canMove = true;
 
         // 2) Nếu base path không hợp lệ thì coi như không move được
-        if (basePts == null || basePts.Count < 2)
+        if (basePtsLocal == null || basePtsLocal.Count < 2)
             canMove = false;
 
         // 3) Kiểm tra block ngay phía trước
@@ -367,7 +376,7 @@ public class GridWavyLineMesh : MonoBehaviour
     public void StartMove()
     {
         if (isMoving) return;
-        if (basePts == null || basePts.Count < 2) return;
+        if (basePtsLocal == null || basePtsLocal.Count < 2) return;
 
         DisableCollider();    
 
@@ -448,7 +457,7 @@ public class GridWavyLineMesh : MonoBehaviour
 
     void BakeBasePath()
     {
-        basePts = null;
+        basePtsLocal = null;
         cum = null;
         cornerS = null;
         totalLen = 0f;
@@ -461,10 +470,16 @@ public class GridWavyLineMesh : MonoBehaviour
         var raw = new List<Vector3>(cells.Count);
         for (int i = 0; i < cells.Count; i++)
         {
-            Vector3 p = grid.CellToWorld(cells[i]);
-            p.z = 0f;
-            raw.Add(p);
+            Vector3 pw = grid.CellToWorld(cells[i]); // world
+            pw.z = 0f;
+
+            // lưu LOCAL theo line transform
+            Vector3 pl = transform.InverseTransformPoint(pw);
+            pl.z = 0f;
+
+            raw.Add(pl);
         }
+
 
         raw = RemoveConsecutiveDuplicates(raw, 1e-6f);
         if (raw.Count < 2) return;
@@ -515,15 +530,20 @@ public class GridWavyLineMesh : MonoBehaviour
                 Vector3 pt = (1 - u) * (1 - u) * P + 2 * (1 - u) * u * B + u * u * Q;
                 smoothed.Add(pt);
             }
+
+            basePtsLocal = smoothed;
+            cum = BuildCum(basePtsLocal);
+            totalLen = cum[cum.Count - 1];
+
         }
 
         smoothed.Add(raw[raw.Count - 1]);
         smoothed = RemoveConsecutiveDuplicates(smoothed, 1e-6f);
         if (smoothed.Count < 2) return;
 
-        basePts = smoothed;
+        basePtsLocal = smoothed;
 
-        cum = BuildCum(basePts);
+        cum = BuildCum(basePtsLocal);
         totalLen = cum[cum.Count - 1];
 
         cornerS = new List<float>();
@@ -531,7 +551,7 @@ public class GridWavyLineMesh : MonoBehaviour
         {
             if (IsTurn(raw[i - 1], raw[i], raw[i + 1]))
             {
-                float sCorner = ProjectToArcLength(basePts, cum, raw[i]);
+                float sCorner = ProjectToArcLength(basePtsLocal, cum, raw[i]);
                 cornerS.Add(sCorner);
             }
         }
@@ -553,7 +573,7 @@ public class GridWavyLineMesh : MonoBehaviour
 
     public void RebuildVisualAndCollider()
     {
-        if (!grid || basePts == null || basePts.Count < 2)
+        if (!grid || basePtsLocal == null || basePtsLocal.Count < 2)
         {
             ClearMeshAndCollider();
             return;
@@ -580,9 +600,12 @@ public class GridWavyLineMesh : MonoBehaviour
             float s = t * totalLen;
             float s2 = s + movingOffset;
 
-            Vector3 p = PointAtExtended(basePts, cum, s2);
-            p.z = 0f;
-            centerWorld[i] = p;
+            Vector3 pl = PointAtExtended(basePtsLocal, cum, s2); // LOCAL
+            pl.z = 0f;
+            Vector3 pw = transform.TransformPoint(pl);           // WORLD
+            pw.z = 0f;
+            centerWorld[i] = pw;
+
         }
 
         ComputeSmoothFrames(centerWorld, tangents, normals);
@@ -898,12 +921,18 @@ public class GridWavyLineMesh : MonoBehaviour
 
     bool IsBlockedStep(float fromOffset, float toOffset)
     {
-        if (basePts == null || basePts.Count < 2) return false;
+        if (basePtsLocal == null || basePtsLocal.Count < 2) return false;
 
         float cs = grid.cellSize;
 
-        Vector3 p0 = PointAtExtended(basePts, cum, totalLen + fromOffset);
-        Vector3 p1 = PointAtExtended(basePts, cum, totalLen + toOffset);
+        Vector3 p0L = PointAtExtended(basePtsLocal, cum, totalLen + fromOffset);
+        Vector3 p1L = PointAtExtended(basePtsLocal, cum, totalLen + toOffset);
+
+        Vector3 p0 = transform.TransformPoint(p0L);
+        Vector3 p1 = transform.TransformPoint(p1L);
+
+        p0.z = 0f; p1.z = 0f;
+
 
         Vector2 dir = (p1 - p0);
         float dist = dir.magnitude;
@@ -1171,30 +1200,121 @@ public class GridWavyLineMesh : MonoBehaviour
     {
         worldPoints = null;
 
-        if (basePts == null || basePts.Count < 2 || cum == null || cum.Count < 2 || grid == null)
+        if (basePtsLocal == null || basePtsLocal.Count < 2 || cum == null || cum.Count < 2 || grid == null)
             return false;
 
-        Vector3 endPos = PointAtExtended(basePts, cum, totalLen + movingOffset);
-        endPos.z = 0f;
+        // End position (LOCAL -> WORLD)
+        Vector3 endLocal = PointAtExtended(basePtsLocal, cum, totalLen + movingOffset);
+        Vector3 endWorld = transform.TransformPoint(endLocal);
+        endWorld.z = 0f;
 
-        Vector3 a = basePts[basePts.Count - 2];
-        Vector3 b = basePts[basePts.Count - 1];
-        Vector3 dir = (b - a);
+        // Last segment direction (LOCAL -> WORLD)
+        Vector3 aL = basePtsLocal[basePtsLocal.Count - 2];
+        Vector3 bL = basePtsLocal[basePtsLocal.Count - 1];
+
+        Vector3 aW = transform.TransformPoint(aL);
+        Vector3 bW = transform.TransformPoint(bL);
+
+        Vector3 dir = (bW - aW);
         dir.z = 0f;
 
         if (dir.sqrMagnitude < 1e-8f)
-            dir = headForwardAxisW; 
+            dir = headForwardAxisW;   // fallback world axis
         dir.Normalize();
 
-        // Độ dài preview
         float length = Mathf.Max(0.5f, extraOutCells) * grid.cellSize;
 
         worldPoints = new Vector3[2];
-        worldPoints[0] = endPos;
-        worldPoints[1] = endPos + dir * length;
+        worldPoints[0] = endWorld;
+        worldPoints[1] = endWorld + dir * length;
 
         return true;
     }
 
 
+    public bool CanExitWithoutBlock_ForHint()
+    {
+        if (isMoving) return false;
+        if (basePtsLocal == null || basePtsLocal.Count < 2) return false;
+        if (!grid) return false;
+
+        // End position WORLD
+        Vector3 endLocal = PointAtExtended(basePtsLocal, cum, totalLen + movingOffset);
+        Vector3 endWorld = transform.TransformPoint(endLocal);
+        endWorld.z = 0f;
+
+        // Direction WORLD (from last segment)
+        Vector3 aL = basePtsLocal[basePtsLocal.Count - 2];
+        Vector3 bL = basePtsLocal[basePtsLocal.Count - 1];
+
+        Vector3 aW = transform.TransformPoint(aL);
+        Vector3 bW = transform.TransformPoint(bL);
+
+        Vector2 dir = (Vector2)(bW - aW);
+        float mag = dir.magnitude;
+
+        if (mag < 1e-6f)
+            return true; // không xác định hướng => coi như thoát được
+
+        dir /= mag;
+
+        float cs = grid.cellSize;
+        float castDist = Mathf.Max(0.1f, extraOutCells) * cs;
+
+        float radius = Mathf.Max(0.01f, lineWidth * probeRadiusMul);
+
+        var filter = new ContactFilter2D();
+        filter.useLayerMask = true;
+        filter.layerMask = lineLayerMask;
+        filter.useTriggers = true;
+
+        RaycastHit2D[] hits = new RaycastHit2D[32];
+        int hitCount = Physics2D.CircleCast(endWorld, radius, dir, filter, hits, castDist);
+
+        for (int i = 0; i < hitCount; i++)
+        {
+            var h = hits[i];
+            if (!h.collider) continue;
+            if (h.collider == poly) continue;
+            if (h.collider.transform.IsChildOf(transform)) continue;
+            return false; // có vật cản trên đường ra
+        }
+
+        return true; // đường ra trống
+    }
+
+
+
+    public void SetHintHighlight(bool on)
+    {
+        if (!meshRenderer) return;
+
+        if (_headRenderer == null && head != null)
+            _headRenderer = head.GetComponent<Renderer>(); 
+
+        if (on && !_hinted)
+        {
+            _hintSortBackup = meshRenderer.sortingOrder;
+            meshRenderer.sortingOrder = _hintSortBackup + 100;
+
+            if (_headRenderer != null)
+            {
+                _hintHeadSortBackup = _headRenderer.sortingOrder;
+                _headRenderer.sortingOrder = meshRenderer.sortingOrder + 1; 
+            }
+
+            if (head) head.AnimationState.SetAnimation(0, "idle2", true);
+            _hinted = true;
+        }
+        else if (!on && _hinted)
+        {
+            meshRenderer.sortingOrder = _hintSortBackup;
+
+            if (_headRenderer != null)
+                _headRenderer.sortingOrder = _hintHeadSortBackup;
+
+            if (head) head.AnimationState.SetAnimation(0, "idle1", true);
+            _hinted = false;
+        }
+    }
 }

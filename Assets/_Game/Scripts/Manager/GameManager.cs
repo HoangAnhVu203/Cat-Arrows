@@ -18,12 +18,15 @@ public class GameManager : Singleton<GameManager>
     public event Action<int, int> OnHeartChanged;
     public event Action<GameState> OnStateChanged;
     public event System.Action<bool> OnShowPathChanged;
+    public event System.Action<bool> OnHintChanged;
 
     private int activeLineCount = 0;
     public bool IsLoadingLevel { get; private set; }
     public bool EraseMode { get; private set; }
     public bool ShowPathMode { get; private set; }
+    public bool HintMode {get; private set;}
     public void SetLoading(bool v) => IsLoadingLevel = v;
+    
    
 
 
@@ -150,5 +153,12 @@ public class GameManager : Singleton<GameManager>
         if (ShowPathMode == on) return;
         ShowPathMode = on;
         OnShowPathChanged?.Invoke(on);
+    }
+
+    public void SetHintMode(bool on)
+    {
+        if (HintMode == on) return;
+        HintMode = on;
+        OnHintChanged?.Invoke(on);
     }
 }
