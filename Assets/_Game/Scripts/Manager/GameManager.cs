@@ -44,7 +44,7 @@ public class GameManager : Singleton<GameManager>
     {
         // Lưu ý: StartLevel sẽ bắn event, nên UI sẽ update ngay.
         LevelManager.Instance.LoadSavedLevel();
-        UIManager.Instance.OpenUI<PanelGamePlay>();
+        UIManager.Instance.OpenUI<PanelHome>();
     }
 
     // ===================== LEVEL =====================
