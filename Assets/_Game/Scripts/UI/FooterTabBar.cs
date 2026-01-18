@@ -40,17 +40,21 @@ public class FooterTabBar : MonoBehaviour
 
     private void Awake()
     {
-        // Bind click
         for (int i = 0; i < tabs.Count; i++)
         {
-            int idx = i;
-            if (tabs[idx].button != null)
+            var b = tabs[i].button;
+            if (b != null)
             {
-                tabs[idx].button.onClick.RemoveAllListeners();
-                tabs[idx].button.onClick.AddListener(() => Select(idx, true));
+                var nav = new Navigation { mode = Navigation.Mode.None };
+                b.navigation = nav;
+
+                int idx = i;
+                b.onClick.RemoveAllListeners();
+                b.onClick.AddListener(() => Select(idx, true));
             }
         }
     }
+
     private void OnEnable()
     {
         StartCoroutine(ResetDefaultNextFrame());
