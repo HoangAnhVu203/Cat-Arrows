@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -5,7 +6,6 @@ using UnityEngine.UI;
 public class PanelHome : UICanvas
 {
     [Header("Scroll")]
-    [SerializeField] private ScrollRect scroll;
     [SerializeField] private RectTransform content;
     [SerializeField] private HomeLevelItemUI itemPrefab;
 
@@ -13,21 +13,19 @@ public class PanelHome : UICanvas
     [SerializeField] private Button playButton;
 
     [Header("Config")]
-    [SerializeField] private int showAround = 2;
+    [SerializeField] private int showNextCount = 4;
 
     readonly List<HomeLevelItemUI> items = new();
 
     void OnEnable()
     {
-        BuildList();
+        BuildSixLevels();
 
         if (playButton != null)
         {
             playButton.onClick.RemoveAllListeners();
             playButton.onClick.AddListener(OnPlayClick);
         }
-
-        StartCoroutine(ScrollToCurrentCR());
     }
 
     void OnDisable()
@@ -36,68 +34,69 @@ public class PanelHome : UICanvas
             playButton.onClick.RemoveAllListeners();
     }
 
-    void BuildList()
+    void BuildSixLevels()
     {
         Clear();
 
-        int total = LevelManager.Instance != null ? LevelManager.Instance.TotalLevels : 0;
-        int currentIndex = LevelManager.Instance != null ? LevelManager.Instance.CurrentLevelNumber : 1; 
+        if (LevelManager.Instance == null || itemPrefab == null || content == null) return;
 
-        if (total <= 0 || itemPrefab == null || content == null) return;
+        int total = LevelManager.Instance.TotalLevels;
+        int cur = LevelManager.Instance.CurrentLevelNumber;
 
-        for (int lv = 1; lv <= total; lv++)
+        int maxShow = Mathf.Min(cur + showNextCount, total);
+
+        for (int lv = cur; lv <= maxShow; lv++)
         {
             var it = Instantiate(itemPrefab, content);
-            it.name = $"LevelItem_{lv:000}";
-            it.Setup(lv, currentIndex);
+            it.name = $"HomeLevel_{lv:000}";
+            it.Setup(lv, cur);
             items.Add(it);
+            it.transform.SetAsFirstSibling();
         }
+
+        // ép layout + ép xuống đáy thật sự
+        StartCoroutine(FixScrollToBottomNextFrame());
     }
 
-    System.Collections.IEnumerator ScrollToCurrentCR()
+    IEnumerator FixScrollToBottomNextFrame()
     {
-        yield return null; // chờ layout
+        // chờ 1 frame để layout/CSF tính Preferred Size
+        yield return null;
 
-        int currentIndex1 = LevelManager.Instance != null ? LevelManager.Instance.CurrentLevelNumber : 1; // 1-based
-        int idx0 = Mathf.Clamp(currentIndex1 - 1, 0, items.Count - 1);
-
-        // Đưa item current về giữa viewport
         Canvas.ForceUpdateCanvases();
+        LayoutRebuilder.ForceRebuildLayoutImmediate(content);
 
-        if (scroll == null || scroll.viewport == null) yield break;
+        // ÉP CONTENT CHẠM ĐÁY VIEWPORT
+        // (vì content pivot Y=0 và anchor Y=0 -> y=0 nghĩa là chạm đáy)
+        var p = content.anchoredPosition;
+        p.y = 0f;
+        content.anchoredPosition = p;
 
-        float contentH = content.rect.height;
-        float viewH = scroll.viewport.rect.height;
-        if (contentH <= viewH + 0.01f)
+        // ÉP SCROLL XUỐNG ĐÁY
+        var sr = content.GetComponentInParent<ScrollRect>();
+        if (sr)
         {
-            scroll.verticalNormalizedPosition = 1f;
-            yield break;
+            sr.StopMovement();
+            sr.verticalNormalizedPosition = 0f;
         }
-
-        // Tính vị trí normalized dựa theo anchoredPosition của item
-        float y = Mathf.Abs(items[idx0].GetComponent<RectTransform>().anchoredPosition.y);
-        float maxScroll = contentH - viewH;
-
-        float norm = 1f - Mathf.Clamp01(y / maxScroll);
-        scroll.verticalNormalizedPosition = norm;
     }
+
 
     void OnPlayClick()
     {
-        // Vào màn game: load level current (đã lưu) rồi mở gameplay
+        // Vào level hiện tại
         UIManager.Instance.CloseUIDirectly<PanelHome>();
         UIManager.Instance.OpenUI<PanelGamePlay>();
 
-        // Nếu bạn có scene gameplay riêng thì ở đây load scene.
-        // Nếu cùng scene: chỉ cần LevelManager.LoadSavedLevel/LoadLevelByIndex(current)
+        // Load đúng level current (đã lưu)
         if (LevelManager.Instance != null)
-            LevelManager.Instance.LoadSavedLevel(); // bạn đã có hàm này
+            LevelManager.Instance.LoadSavedLevel();
     }
 
     void Clear()
     {
         for (int i = 0; i < items.Count; i++)
-            if (items[i] != null) Destroy(items[i].gameObject);
+            if (items[i]) Destroy(items[i].gameObject);
         items.Clear();
     }
 }
