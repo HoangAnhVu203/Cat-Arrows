@@ -117,12 +117,9 @@ public class FooterTabBar : MonoBehaviour
 
     private Vector2 GetSelectionTargetAnchoredPos(RectTransform tabRoot)
     {
-        // Chuyển vị trí tab sang anchoredPosition trong hệ selectionParent
-        // Cách làm: lấy world position của tab rồi đổi về local của selectionParent
         Vector3 world = tabRoot.TransformPoint(tabRoot.rect.center);
         Vector3 local = selectionParent.InverseTransformPoint(world);
 
-        // Giữ y của selection (để không nhảy lên xuống)
         return new Vector2(local.x, selection.anchoredPosition.y);
     }
 
