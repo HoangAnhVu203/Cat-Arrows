@@ -362,7 +362,7 @@ public class GridWavyLineMesh : MonoBehaviour
         // 4) Nếu không thể move -> trừ tim 1 lần cho click này
         if (!canMove)
         {
-            HapticFeedback.MediumFeedback();
+            
             EnableCollider();
             if (GameManager.Instance != null)
                 GameManager.Instance.LoseHeart();

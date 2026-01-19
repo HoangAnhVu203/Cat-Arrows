@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class FooterTabBar : MonoBehaviour
+public class FooterTabBar : UICanvas
 {
     [System.Serializable]
     public class Tab
@@ -33,7 +33,7 @@ public class FooterTabBar : MonoBehaviour
     [SerializeField] private float iconMoveUp = 18f;
     [SerializeField] private float iconAnimDuration = 0.12f;
     [SerializeField] private float iconBaseY = 0f;
-
+    [SerializeField] private TabTransitionController tabTransition;
 
     private int currentIndex = -1;
     private Coroutine slideCo;
@@ -53,10 +53,13 @@ public class FooterTabBar : MonoBehaviour
                 b.onClick.AddListener(() => Select(idx, true));
             }
         }
+
+        AutoBind();
     }
 
     private void OnEnable()
     {
+        AutoBind();
         StartCoroutine(ResetDefaultNextFrame());
     }
     private IEnumerator ResetDefaultNextFrame()
@@ -113,6 +116,13 @@ public class FooterTabBar : MonoBehaviour
         slideCo = StartCoroutine(animate ? SlideTo(targetPos) : SnapTo(targetPos));
 
         currentIndex = index;
+
+        if (tabTransition != null)
+        {
+            if (index == 1) tabTransition.SwitchToHome();
+            else if (index == 2) tabTransition.SwitchToCalendar();
+        }
+        NotifySwitch(index);
     }
 
     private Vector2 GetSelectionTargetAnchoredPos(RectTransform tabRoot)
@@ -175,6 +185,24 @@ public class FooterTabBar : MonoBehaviour
 
         icon.localScale = targetScale;
         icon.anchoredPosition = targetPos;
+    }
+
+    private void AutoBind()
+    {
+        if (tabTransition != null) return;
+
+        // Tìm trong scene (Canvas Main có TabTransitionController)
+        tabTransition = FindFirstObjectByType<TabTransitionController>(); // Unity 2023+ / 6 OK
+
+        if (tabTransition == null)
+            tabTransition = FindObjectOfType<TabTransitionController>(true); // fallback (include inactive)
+    }
+    private void NotifySwitch(int index)
+    {
+        if (tabTransition == null) return;
+
+        if (index == 1) tabTransition.SwitchToHome();
+        else if (index == 2) tabTransition.SwitchToCalendar();
     }
 
 }

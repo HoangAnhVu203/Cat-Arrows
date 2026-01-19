@@ -1,4 +1,6 @@
 using System;
+using System.Collections;
+using CandyCoded.HapticFeedback;
 using UnityEngine;
 
 public class GameManager : Singleton<GameManager>
@@ -17,20 +19,27 @@ public class GameManager : Singleton<GameManager>
 
     public event Action<int, int> OnHeartChanged;
     public event Action<GameState> OnStateChanged;
-    public event System.Action<bool> OnShowPathChanged;
-    public event System.Action<bool> OnHintChanged;
+    public event Action<bool> OnShowPathChanged;
+    public event Action<bool> OnHintChanged;
 
     private int activeLineCount = 0;
+
     public bool IsLoadingLevel { get; private set; }
     public bool EraseMode { get; private set; }
     public bool ShowPathMode { get; private set; }
-    public bool HintMode {get; private set;}
+    public bool HintMode { get; private set; }
+
     public void SetLoading(bool v) => IsLoadingLevel = v;
-    
-   
+
+    [Header("Boot Loading")]
+    [SerializeField] private float bootLoadingSeconds = 2f;
+    private float dailyReturnDelay = 0f;
+    private Coroutine returnHomeCR;
 
 
-    void Awake()
+    private bool booted;
+
+    private void Awake()
     {
         if (Instance != null && Instance != this)
         {
@@ -40,20 +49,49 @@ public class GameManager : Singleton<GameManager>
         DontDestroyOnLoad(gameObject);
     }
 
-    void Start()
+    private void Start()
     {
-        // Lưu ý: StartLevel sẽ bắn event, nên UI sẽ update ngay.
-        LevelManager.Instance.LoadSavedLevel();
+        if (booted) return;
+        booted = true;
+
+        StartCoroutine(BootRoutine());
+    }
+
+    private IEnumerator BootRoutine()
+    {
+        // 1) Bật Loading trước
+        var loading = UIManager.Instance.OpenUI<PanelLoading>();
+
+        // Đảm bảo Loading nằm trên cùng (quan trọng)
+        if (loading != null) loading.transform.SetAsLastSibling();
+
+        // 2) Load save / init data
+        LevelManager.Instance?.LoadSavedLevel();
+
+        // 3) Chờ 2 giây realtime (không bị ảnh hưởng bởi timeScale)
+        yield return new WaitForSecondsRealtime(bootLoadingSeconds);
+
+        // 4) Tắt Loading
+        UIManager.Instance.CloseUIDirectly<PanelLoading>();
+
+        // 5) Mở UI chính sau khi loading tắt
         UIManager.Instance.OpenUI<PanelHome>();
+        UIManager.Instance.OpenUI<PanelCalendar>();
+        UIManager.Instance.OpenUI<FooterTabBar>();
+
+        UIManager.Instance.CloseUIDirectly<PanelCalendar>();
+
+        // Nếu bạn muốn chắc chắn layout ổn: chờ 1 frame rồi ép update
+        yield return null;
+        Canvas.ForceUpdateCanvases();
     }
 
     // ===================== LEVEL =====================
     public void StartLevel()
     {
-        currentHeart = maxHeart; 
+        currentHeart = maxHeart;
         ChangeState(GameState.GamePlay);
 
-        // bắn event để UI update
         OnHeartChanged?.Invoke(currentHeart, maxHeart);
     }
 
@@ -74,26 +112,44 @@ public class GameManager : Singleton<GameManager>
         }
     }
 
-    void EnterGamePlay()
+    private void EnterGamePlay()
     {
         Time.timeScale = 1f;
         UIManager.Instance.OpenUI<PanelGamePlay>();
         Debug.Log("[GameState] GamePlay");
     }
 
-    void EnterWin()
+   void EnterWin()
     {
         Time.timeScale = 1f;
+
         UIManager.Instance.OpenUI<PanelWin>();
         UIManager.Instance.CloseUIDirectly<PanelGamePlay>();
+
+        // DAILY: auto về home
+        if (LevelManager.Instance != null && LevelManager.Instance.CurrentMode == LevelManager.LevelMode.Daily)
+        {
+            StartReturnHomeFromDaily();
+            var d = LevelManager.Instance.CurrentDailyDate;
+            if (d != default)
+                DailyProgress.SetWin(d, true);
+        }
+            
+
         Debug.Log("[GameState] WIN");
     }
 
     void EnterFail()
     {
         Time.timeScale = 1f;
+
         UIManager.Instance.OpenUI<PanelFail>();
         UIManager.Instance.CloseUIDirectly<PanelGamePlay>();
+
+        // DAILY: auto về home
+        if (LevelManager.Instance != null && LevelManager.Instance.CurrentMode == LevelManager.LevelMode.Daily)
+            StartReturnHomeFromDaily();
+
         Debug.Log("[GameState] FAIL");
     }
 
@@ -114,20 +170,21 @@ public class GameManager : Singleton<GameManager>
         if (currentState != GameState.GamePlay) return;
 
         currentHeart = Mathf.Max(0, currentHeart - 1);
-
         OnHeartChanged?.Invoke(currentHeart, maxHeart);
+        
+        HapticFeedback.MediumFeedback();
 
         Debug.Log($"Heart left: {currentHeart}");
 
         if (currentHeart <= 0)
             ChangeState(GameState.Fail);
     }
+
     public void RegisterLine()
     {
         activeLineCount++;
     }
 
-    // ===================== LINE MANAGEMENT =====================
     public void UnregisterLine()
     {
         activeLineCount = Mathf.Max(0, activeLineCount - 1);
@@ -143,10 +200,7 @@ public class GameManager : Singleton<GameManager>
     }
 
     // === Mode Game ===
-    public void SetEraseMode(bool on)
-    {
-        EraseMode = on;
-    }
+    public void SetEraseMode(bool on) => EraseMode = on;
 
     public void SetShowPathMode(bool on)
     {
@@ -161,4 +215,31 @@ public class GameManager : Singleton<GameManager>
         HintMode = on;
         OnHintChanged?.Invoke(on);
     }
+
+    private void StartReturnHomeFromDaily()
+    {
+        if (returnHomeCR != null) StopCoroutine(returnHomeCR);
+        returnHomeCR = StartCoroutine(ReturnHomeFromDailyCR());
+    }
+
+    private IEnumerator ReturnHomeFromDailyCR()
+    {
+        // Cho UI Win/Fail kịp bật 1 chút (tuỳ bạn, có thể để 0)
+        yield return new WaitForSecondsRealtime(dailyReturnDelay);
+
+        // Đóng kết quả + gameplay (để chắc)
+        UIManager.Instance.CloseUIDirectly<PanelWin>();
+        UIManager.Instance.CloseUIDirectly<PanelFail>();
+        UIManager.Instance.CloseUIDirectly<PanelGamePlay>();
+
+        // QUAN TRỌNG: quay về Home UI
+        UIManager.Instance.OpenUI<PanelHome>();
+        UIManager.Instance.OpenUI<FooterTabBar>();
+
+        // Không bắt buộc, nhưng nên đóng Calendar nếu bạn muốn chắc chắn “về home”
+        UIManager.Instance.CloseUIDirectly<PanelCalendar>();
+
+        returnHomeCR = null;
+    }
+
 }

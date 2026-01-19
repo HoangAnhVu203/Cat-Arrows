@@ -129,6 +129,7 @@ GameObject:
   m_Component:
   - component: {fileID: 27735064}
   - component: {fileID: 27735065}
+  - component: {fileID: 27735066}
   m_Layer: 0
   m_Name: Root
   m_TagString: Untagged
@@ -169,6 +170,18 @@ MonoBehaviour:
   maxOffset: {x: 3.5, y: 6}
   follow: 18
   inertia: 10
+--- !u!114 &27735066
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 27735063}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 78a014680330747109c25532b7b0106c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UIBoot
 --- !u!1 &50457961
 GameObject:
   m_ObjectHideFlags: 0
@@ -213,7 +226,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aa55403e8c2a84be2b92f488ccbbcfb0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LevelManager
-  levels:
+  levelsNormal:
   - {fileID: 790893803678414527, guid: 40e436b400190491e87274fd53db1683, type: 3}
   - {fileID: 2154528318457781267, guid: 4810f4e81b7f54f72af61d8ace1751cf, type: 3}
   - {fileID: 721236283268669580, guid: 657cc5bfbb8e94e6dbb859f170273e5f, type: 3}
@@ -224,6 +237,39 @@ MonoBehaviour:
   - {fileID: 3661455767188800537, guid: 71c345c7ab09a44c7a359354de1137bc, type: 3}
   - {fileID: 514775038832374487, guid: 4b7ef912145894c03b27310c00a3dec2, type: 3}
   - {fileID: 1571439176115058712, guid: 34b1702c4c5ce42b7bd1c142ef8c6389, type: 3}
+  levelsDaily:
+  - {fileID: 514775038832374487, guid: 4b7ef912145894c03b27310c00a3dec2, type: 3}
+  - {fileID: 514775038832374487, guid: 4b7ef912145894c03b27310c00a3dec2, type: 3}
+  - {fileID: 514775038832374487, guid: 4b7ef912145894c03b27310c00a3dec2, type: 3}
+  - {fileID: 514775038832374487, guid: 4b7ef912145894c03b27310c00a3dec2, type: 3}
+  - {fileID: 514775038832374487, guid: 4b7ef912145894c03b27310c00a3dec2, type: 3}
+  - {fileID: 514775038832374487, guid: 4b7ef912145894c03b27310c00a3dec2, type: 3}
+  - {fileID: 514775038832374487, guid: 4b7ef912145894c03b27310c00a3dec2, type: 3}
+  - {fileID: 514775038832374487, guid: 4b7ef912145894c03b27310c00a3dec2, type: 3}
+  - {fileID: 514775038832374487, guid: 4b7ef912145894c03b27310c00a3dec2, type: 3}
+  - {fileID: 514775038832374487, guid: 4b7ef912145894c03b27310c00a3dec2, type: 3}
+  - {fileID: 514775038832374487, guid: 4b7ef912145894c03b27310c00a3dec2, type: 3}
+  - {fileID: 514775038832374487, guid: 4b7ef912145894c03b27310c00a3dec2, type: 3}
+  - {fileID: 514775038832374487, guid: 4b7ef912145894c03b27310c00a3dec2, type: 3}
+  - {fileID: 514775038832374487, guid: 4b7ef912145894c03b27310c00a3dec2, type: 3}
+  - {fileID: 514775038832374487, guid: 4b7ef912145894c03b27310c00a3dec2, type: 3}
+  - {fileID: 514775038832374487, guid: 4b7ef912145894c03b27310c00a3dec2, type: 3}
+  - {fileID: 514775038832374487, guid: 4b7ef912145894c03b27310c00a3dec2, type: 3}
+  - {fileID: 514775038832374487, guid: 4b7ef912145894c03b27310c00a3dec2, type: 3}
+  - {fileID: 514775038832374487, guid: 4b7ef912145894c03b27310c00a3dec2, type: 3}
+  - {fileID: 514775038832374487, guid: 4b7ef912145894c03b27310c00a3dec2, type: 3}
+  - {fileID: 514775038832374487, guid: 4b7ef912145894c03b27310c00a3dec2, type: 3}
+  - {fileID: 514775038832374487, guid: 4b7ef912145894c03b27310c00a3dec2, type: 3}
+  - {fileID: 514775038832374487, guid: 4b7ef912145894c03b27310c00a3dec2, type: 3}
+  - {fileID: 514775038832374487, guid: 4b7ef912145894c03b27310c00a3dec2, type: 3}
+  - {fileID: 514775038832374487, guid: 4b7ef912145894c03b27310c00a3dec2, type: 3}
+  - {fileID: 514775038832374487, guid: 4b7ef912145894c03b27310c00a3dec2, type: 3}
+  - {fileID: 514775038832374487, guid: 4b7ef912145894c03b27310c00a3dec2, type: 3}
+  - {fileID: 514775038832374487, guid: 4b7ef912145894c03b27310c00a3dec2, type: 3}
+  - {fileID: 514775038832374487, guid: 4b7ef912145894c03b27310c00a3dec2, type: 3}
+  - {fileID: 514775038832374487, guid: 4b7ef912145894c03b27310c00a3dec2, type: 3}
+  - {fileID: 514775038832374487, guid: 4b7ef912145894c03b27310c00a3dec2, type: 3}
+  - {fileID: 514775038832374487, guid: 4b7ef912145894c03b27310c00a3dec2, type: 3}
   levelRoot: {fileID: 27735064}
   loadDelay: 0.05
   saveProgress: 1
@@ -845,6 +891,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameManager
   maxHeart: 3
+  bootLoadingSeconds: 2
 --- !u!1 &1652489997
 GameObject:
   m_ObjectHideFlags: 0
@@ -858,6 +905,7 @@ GameObject:
   - component: {fileID: 1652489999}
   - component: {fileID: 1652489998}
   - component: {fileID: 1652490002}
+  - component: {fileID: 1652490003}
   m_Layer: 5
   m_Name: Canvas - Main
   m_TagString: Untagged
@@ -960,6 +1008,24 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UIManager
   parent: {fileID: 1652490001}
+--- !u!114 &1652490003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1652489997}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3dd83b5cfad35499382ee080f5256a0d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TabTransitionController
+  panelContainer: {fileID: 1652490001}
+  homePanelGO: {fileID: 5220771809586717541, guid: 04c2e70d236e840b782c2bb8761e2f1d, type: 3}
+  calendarPanelGO: {fileID: 3956437249293835776, guid: 5191d983984b44173ad59a3a158d64e1, type: 3}
+  homeSlider: {fileID: -8101769791741761304, guid: 04c2e70d236e840b782c2bb8761e2f1d, type: 3}
+  calendarSlider: {fileID: 1800747296277955306, guid: 5191d983984b44173ad59a3a158d64e1, type: 3}
+  startTab: 1
 --- !u!1 &1910045976
 GameObject:
   m_ObjectHideFlags: 0

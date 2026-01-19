@@ -341,6 +341,38 @@ public class PanelGamePlay : UICanvas
         }
     }
 
+    public void OnBackClick()
+    {
+        if (GameManager.Instance != null)
+        {
+            if (GameManager.Instance.HintMode) GameManager.Instance.SetHintMode(false);
+            if (GameManager.Instance.ShowPathMode) GameManager.Instance.SetShowPathMode(false);
+            GameManager.Instance.SetEraseMode(false);
+        }
+
+        StopHintLoop();
+        ClearHintVisual();
+        ClearPreviewPaths();
+
+        UIManager.Instance.CloseUIDirectly<PanelGamePlay>();
+
+        // mở footer luôn
+        UIManager.Instance.OpenUI<FooterTabBar>();
+
+        if (LevelManager.Instance != null && LevelManager.Instance.CurrentMode == LevelManager.LevelMode.Daily)
+        {
+            UIManager.Instance.OpenUI<PanelCalendar>();
+            UIManager.Instance.CloseUIDirectly<PanelHome>();
+            // nếu bạn có TabTransitionController: SwitchToCalendar()
+        }
+        else
+        {
+            UIManager.Instance.OpenUI<PanelHome>();
+            UIManager.Instance.CloseUIDirectly<PanelCalendar>();
+            // SwitchToHome()
+        }
+    }
+
 
 
 

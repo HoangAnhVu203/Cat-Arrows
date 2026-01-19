@@ -15,33 +15,59 @@ public class PanelHome : UICanvas
     [Header("Config")]
     [SerializeField] private int showNextCount = 4;
 
-    readonly List<HomeLevelItemUI> items = new();
+    private readonly List<HomeLevelItemUI> items = new();
+    private Coroutine buildCo;
 
-    void OnEnable()
+    private void OnEnable()
     {
-        BuildSixLevels();
-
+        // Bind button
         if (playButton != null)
         {
             playButton.onClick.RemoveAllListeners();
             playButton.onClick.AddListener(OnPlayClick);
         }
+
+        // IMPORTANT: build trễ để tránh đọc CurrentLevelNumber quá sớm
+        if (buildCo != null) StopCoroutine(buildCo);
+        buildCo = StartCoroutine(BuildWhenReady());
     }
 
-    void OnDisable()
+    private void OnDisable()
     {
+        if (buildCo != null)
+        {
+            StopCoroutine(buildCo);
+            buildCo = null;
+        }
+
         if (playButton != null)
             playButton.onClick.RemoveAllListeners();
     }
 
-    void BuildSixLevels()
+    private IEnumerator BuildWhenReady()
+    {
+        yield return null;
+
+        const int maxWaitFrames = 60;
+        int waited = 0;
+
+        while ((LevelManager.Instance == null || LevelManager.Instance.GetNormalTotalLevels() <= 0) && waited < maxWaitFrames)
+        {
+            waited++;
+            yield return null;
+        }
+
+        BuildLevels();
+    }
+
+    private void BuildLevels()
     {
         Clear();
 
         if (LevelManager.Instance == null || itemPrefab == null || content == null) return;
 
-        int total = LevelManager.Instance.TotalLevels;
-        int cur = LevelManager.Instance.CurrentLevelNumber;
+        int total = LevelManager.Instance.GetNormalTotalLevels();
+        int cur = Mathf.Clamp(LevelManager.Instance.GetSavedNormalLevelNumber(), 1, total);
 
         int maxShow = Mathf.Min(cur + showNextCount, total);
 
@@ -54,25 +80,20 @@ public class PanelHome : UICanvas
             it.transform.SetAsFirstSibling();
         }
 
-        // ép layout + ép xuống đáy thật sự
         StartCoroutine(FixScrollToBottomNextFrame());
     }
 
-    IEnumerator FixScrollToBottomNextFrame()
+    private IEnumerator FixScrollToBottomNextFrame()
     {
-        // chờ 1 frame để layout/CSF tính Preferred Size
         yield return null;
 
         Canvas.ForceUpdateCanvases();
         LayoutRebuilder.ForceRebuildLayoutImmediate(content);
 
-        // ÉP CONTENT CHẠM ĐÁY VIEWPORT
-        // (vì content pivot Y=0 và anchor Y=0 -> y=0 nghĩa là chạm đáy)
         var p = content.anchoredPosition;
         p.y = 0f;
         content.anchoredPosition = p;
 
-        // ÉP SCROLL XUỐNG ĐÁY
         var sr = content.GetComponentInParent<ScrollRect>();
         if (sr)
         {
@@ -81,22 +102,28 @@ public class PanelHome : UICanvas
         }
     }
 
-
-    void OnPlayClick()
+    private void OnPlayClick()
     {
-        // Vào level hiện tại
-        UIManager.Instance.CloseUIDirectly<PanelHome>();
-        UIManager.Instance.OpenUI<PanelGamePlay>();
-
-        // Load đúng level current (đã lưu)
+        // Quan trọng: đảm bảo current level được load/set trước khi vào gameplay
         if (LevelManager.Instance != null)
             LevelManager.Instance.LoadSavedLevel();
+
+        UIManager.Instance.CloseUIDirectly<PanelHome>();
+        UIManager.Instance.CloseUIDirectly<PanelCalendar>();
+        UIManager.Instance.CloseUIDirectly<FooterTabBar>();
+
+        UIManager.Instance.OpenUI<PanelGamePlay>();
     }
 
-    void Clear()
+    private void Clear()
     {
         for (int i = 0; i < items.Count; i++)
             if (items[i]) Destroy(items[i].gameObject);
         items.Clear();
+    }
+
+    public void SettingBTN()
+    {
+        UIManager.Instance.OpenUI<PanelSetting>();
     }
 }
