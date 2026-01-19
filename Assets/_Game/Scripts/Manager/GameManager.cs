@@ -224,10 +224,10 @@ public class GameManager : Singleton<GameManager>
 
     private IEnumerator ReturnHomeFromDailyCR()
     {
-        // Cho UI Win/Fail kịp bật 1 chút (tuỳ bạn, có thể để 0)
+        // Cho UI Win/Fail kịp bật 1 chút
         yield return new WaitForSecondsRealtime(dailyReturnDelay);
 
-        // Đóng kết quả + gameplay (để chắc)
+        // Đóng kết quả + gameplay
         UIManager.Instance.CloseUIDirectly<PanelWin>();
         UIManager.Instance.CloseUIDirectly<PanelFail>();
         UIManager.Instance.CloseUIDirectly<PanelGamePlay>();
@@ -236,7 +236,6 @@ public class GameManager : Singleton<GameManager>
         UIManager.Instance.OpenUI<PanelHome>();
         UIManager.Instance.OpenUI<FooterTabBar>();
 
-        // Không bắt buộc, nhưng nên đóng Calendar nếu bạn muốn chắc chắn “về home”
         UIManager.Instance.CloseUIDirectly<PanelCalendar>();
 
         returnHomeCR = null;

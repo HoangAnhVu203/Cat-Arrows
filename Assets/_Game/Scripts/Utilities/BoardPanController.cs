@@ -19,12 +19,22 @@ public class BoardPanController : MonoBehaviour
     [Range(0f, 30f)] public float follow = 18f;
     [Range(0f, 30f)] public float inertia = 10f;
 
+    [Header("Block Pan When Touching Line")]
+    [SerializeField] private LayerMask blockPanMask;  
+    [SerializeField] private float dragStartThresholdPx = 12f;
+
+
     Vector3 startPos;
     Vector3 targetPos;
 
     bool dragging;
     Vector3 lastWorld;
     Vector3 velocity;
+
+    bool pendingDrag;           
+    Vector2 pressScreenPos;     
+    Vector3 pressWorldPos;
+    bool blockThisPress;
 
     static readonly List<RaycastResult> _uiHits = new List<RaycastResult>(32);
 
@@ -79,31 +89,60 @@ public class BoardPanController : MonoBehaviour
     {
         if (IsPointerBlockedByUI(screenPos)) return;
 
-        dragging = true;
+        if (IsPointerBlockedByWorld(screenPos))
+        {
+            blockThisPress = true;
+            pendingDrag = false;
+            dragging = false;
+            return;
+        }
+
+        blockThisPress = false;
+        pendingDrag = true;
+        dragging = false;
+
+        pressScreenPos = screenPos;
+        pressWorldPos = ScreenToWorldPlane(screenPos);
+
         velocity = Vector3.zero;
-        lastWorld = ScreenToWorldPlane(screenPos);
+        lastWorld = pressWorldPos;
     }
+
 
     void Drag(Vector2 screenPos)
     {
+        if (blockThisPress) return;
+
+        if (pendingDrag && !dragging)
+        {
+            float dist = (screenPos - pressScreenPos).magnitude;
+            if (dist < dragStartThresholdPx) return;
+
+            dragging = true;
+            pendingDrag = false;
+            lastWorld = ScreenToWorldPlane(screenPos);
+        }
+
         if (!dragging) return;
 
         Vector3 w = ScreenToWorldPlane(screenPos);
-        Vector3 delta = w - lastWorld;          // ngón tay đi đâu
+        Vector3 delta = w - lastWorld;
         lastWorld = w;
 
-        // kéo board ngược lại để cảm giác “nắm board”
         targetPos += delta;
         targetPos = ClampToStart(targetPos);
 
-        // lưu vận tốc để thả tay có inertia
         velocity = Vector3.Lerp(velocity, delta / Mathf.Max(0.0001f, Time.unscaledDeltaTime), 0.25f);
     }
 
+
     void EndDrag()
     {
+        pendingDrag = false;
         dragging = false;
+        blockThisPress = false;
     }
+
 
     Vector3 ScreenToWorldPlane(Vector2 screenPos)
     {
@@ -141,4 +180,16 @@ public class BoardPanController : MonoBehaviour
     {
         return (boardRoot.position - startPos).magnitude;
     }
+
+    bool IsPointerBlockedByWorld(Vector2 screenPos)
+    {
+        if (cam == null) return false;
+
+        Vector3 wp = cam.ScreenToWorldPoint(new Vector3(screenPos.x, screenPos.y, -cam.transform.position.z));
+        Vector2 p2 = new Vector2(wp.x, wp.y);
+
+        var hit = Physics2D.OverlapPoint(p2, blockPanMask);
+        return hit != null;
+    }
+
 }

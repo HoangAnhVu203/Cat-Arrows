@@ -170,6 +170,10 @@ MonoBehaviour:
   maxOffset: {x: 3.5, y: 6}
   follow: 18
   inertia: 10
+  blockPanMask:
+    serializedVersion: 2
+    m_Bits: 8
+  dragStartThresholdPx: 12
 --- !u!114 &27735066
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -22,6 +22,11 @@ public class PanelCalendar : UICanvas
     public DateTime currDate = DateTime.Now; // viewing month (always day=1)
     private DateTime selectedDate;           // selected day (green)
 
+    [Header("Month Progress UI")]
+    [SerializeField] private Text monthPercentText;   
+    [SerializeField] private Image monthFillImage;
+
+
     [Serializable]
     public class Day
     {
@@ -269,6 +274,7 @@ public class PanelCalendar : UICanvas
         }
 
         RefreshPlayButton();
+        UpdateMonthProgressUI(year, month);
     }
 
     private void OnDayClicked(int zeroBasedDay)
@@ -345,7 +351,6 @@ public class PanelCalendar : UICanvas
     {
         if (playBtn == null) return;
 
-        // không cho play ngày tương lai
         playBtn.interactable = selectedDate.Date <= DateTime.Today;
     }
 
@@ -365,13 +370,23 @@ public class PanelCalendar : UICanvas
         // Daily level = dayOfMonth (1..31)
         int day = selectedDate.Day;
 
-        // Load level daily (31 prefab riêng) - bạn phải có hàm này trong LevelManager
         LevelManager.Instance.LoadDailyByDay(selectedDate.Day);
 
-        // Chuyển UI sang gameplay theo flow của bạn
         UIManager.Instance.CloseUIDirectly<PanelHome>();
         UIManager.Instance.CloseUIDirectly<PanelCalendar>();
         UIManager.Instance.CloseUIDirectly<FooterTabBar>();
         UIManager.Instance.OpenUI<PanelGamePlay>();
     }
+
+    private void UpdateMonthProgressUI(int year, int month)
+    {
+        int percent = DailyProgressMonth.PercentInMonth_3PerWin(year, month);
+
+        if (monthPercentText != null)
+            monthPercentText.text = percent + "%";
+
+        if (monthFillImage != null)
+            monthFillImage.fillAmount = percent / 100f;
+    }
+
 }
