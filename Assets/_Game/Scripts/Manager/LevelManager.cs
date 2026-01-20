@@ -219,5 +219,15 @@ public class LevelManager : Singleton<LevelManager>
     {
         return levelsNormal != null ? levelsNormal.Count : 0;
     }
+    public void InitNormalProgressOnly()
+    {
+        if (levelsNormal == null || levelsNormal.Count == 0) return;
+
+        int saved = saveProgress ? PlayerPrefs.GetInt(PREF_LEVEL_INDEX, 0) : 0;
+        saved = Mathf.Clamp(saved, 0, levelsNormal.Count - 1);
+
+        currentMode = LevelMode.Normal;
+        currentLevelIndex = saved;   // chỉ set index thôi, KHÔNG load prefab
+    }
 
 }

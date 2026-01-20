@@ -356,20 +356,18 @@ public class PanelGamePlay : UICanvas
 
         UIManager.Instance.CloseUIDirectly<PanelGamePlay>();
 
-        // mở footer luôn
         UIManager.Instance.OpenUI<FooterTabBar>();
 
         if (LevelManager.Instance != null && LevelManager.Instance.CurrentMode == LevelManager.LevelMode.Daily)
         {
             UIManager.Instance.OpenUI<PanelCalendar>();
             UIManager.Instance.CloseUIDirectly<PanelHome>();
-            // nếu bạn có TabTransitionController: SwitchToCalendar()
+
         }
         else
         {
             UIManager.Instance.OpenUI<PanelHome>();
             UIManager.Instance.CloseUIDirectly<PanelCalendar>();
-            // SwitchToHome()
         }
     }
 

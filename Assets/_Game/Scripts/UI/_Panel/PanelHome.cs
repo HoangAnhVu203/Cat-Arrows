@@ -27,7 +27,6 @@ public class PanelHome : UICanvas
             playButton.onClick.AddListener(OnPlayClick);
         }
 
-        // IMPORTANT: build trễ để tránh đọc CurrentLevelNumber quá sớm
         if (buildCo != null) StopCoroutine(buildCo);
         buildCo = StartCoroutine(BuildWhenReady());
     }
@@ -104,7 +103,6 @@ public class PanelHome : UICanvas
 
     private void OnPlayClick()
     {
-        // Quan trọng: đảm bảo current level được load/set trước khi vào gameplay
         if (LevelManager.Instance != null)
             LevelManager.Instance.LoadSavedLevel();
 

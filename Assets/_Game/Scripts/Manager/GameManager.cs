@@ -32,7 +32,7 @@ public class GameManager : Singleton<GameManager>
     public void SetLoading(bool v) => IsLoadingLevel = v;
 
     [Header("Boot Loading")]
-    [SerializeField] private float bootLoadingSeconds = 5f;
+    [SerializeField] private float bootLoadingSeconds = 10f;
     private float dailyReturnDelay = 0f;
     private Coroutine returnHomeCR;
 
@@ -51,40 +51,49 @@ public class GameManager : Singleton<GameManager>
 
     private void Start()
     {
-        if (booted) return;
-        booted = true;
+        //if (booted) return;
+        //booted = true;
 
-        StartCoroutine(BootRoutine());
+        //StartCoroutine(BootRoutine());
+        UIManager.Instance.OpenUI<PanelLoading>();
+        StartCoroutine(OffPanel());
     }
 
-    private IEnumerator BootRoutine()
+    IEnumerator OffPanel()
     {
-        // 1) Bật Loading trước
-        var loading = UIManager.Instance.OpenUI<PanelLoading>();
+        yield return new WaitForSeconds(5.0f);
 
-        // Đảm bảo Loading nằm trên cùng (quan trọng)
-        if (loading != null) loading.transform.SetAsLastSibling();
-
-        // 2) Load save / init data
-        LevelManager.Instance?.LoadSavedLevel();
-
-        // 3) Chờ 2 giây realtime (không bị ảnh hưởng bởi timeScale)
-        yield return new WaitForSecondsRealtime(bootLoadingSeconds);
-
-        // 4) Tắt Loading
         UIManager.Instance.CloseUIDirectly<PanelLoading>();
-
-        // 5) Mở UI chính sau khi loading tắt
-        UIManager.Instance.OpenUI<PanelHome>();
-        UIManager.Instance.OpenUI<PanelCalendar>();
-        UIManager.Instance.OpenUI<FooterTabBar>();
-
-        UIManager.Instance.CloseUIDirectly<PanelCalendar>();
-
-        // Nếu bạn muốn chắc chắn layout ổn: chờ 1 frame rồi ép update
-        yield return null;
-        Canvas.ForceUpdateCanvases();
     }
+
+    //private IEnumerator BootRoutine()
+    //{
+    //    // 1) Bật Loading trước
+    //    var loading = UIManager.Instance.OpenUI<PanelLoading>();
+
+    //    // Đảm bảo Loading nằm trên cùng (quan trọng)
+    //    if (loading != null) loading.transform.SetAsLastSibling();
+
+    //    // 2) Load save / init data
+    //    LevelManager.Instance?.LoadSavedLevel();
+
+    //    // 3) Chờ 2 giây realtime (không bị ảnh hưởng bởi timeScale)
+    //    yield return new WaitForSecondsRealtime(10f);
+
+    //    // 4) Tắt Loading
+    //    UIManager.Instance.CloseUIDirectly<PanelLoading>();
+
+    //    // 5) Mở UI chính sau khi loading tắt
+    //    UIManager.Instance.OpenUI<PanelHome>();
+    //    UIManager.Instance.OpenUI<PanelCalendar>();
+    //    UIManager.Instance.OpenUI<FooterTabBar>();
+
+    //    UIManager.Instance.CloseUIDirectly<PanelCalendar>();
+
+    //    // Nếu bạn muốn chắc chắn layout ổn: chờ 1 frame rồi ép update
+    //    yield return null;
+    //    Canvas.ForceUpdateCanvases();
+    //}
 
     // ===================== LEVEL =====================
     public void StartLevel()

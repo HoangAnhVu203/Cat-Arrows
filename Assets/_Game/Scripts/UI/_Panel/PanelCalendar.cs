@@ -26,6 +26,9 @@ public class PanelCalendar : UICanvas
     [SerializeField] private Text monthPercentText;   
     [SerializeField] private Image monthFillImage;
 
+    [Header("Monthly Art")]
+    [SerializeField] private MonthlyArtConfig monthlyArt;
+    [SerializeField] private Image monthArtImage;     // ảnh tháng
 
     [Serializable]
     public class Day
@@ -275,6 +278,7 @@ public class PanelCalendar : UICanvas
 
         RefreshPlayButton();
         UpdateMonthProgressUI(year, month);
+        //RefreshMonthArt(year, month);
     }
 
     private void OnDayClicked(int zeroBasedDay)
@@ -388,5 +392,16 @@ public class PanelCalendar : UICanvas
         if (monthFillImage != null)
             monthFillImage.fillAmount = percent / 100f;
     }
+
+    private void RefreshMonthArt(int year, int month)
+    {
+        if (monthArtImage != null && monthlyArt != null)
+            monthArtImage.sprite = monthlyArt.GetSpriteForMonth(month);
+
+        // Nếu bạn dùng 2 lớp (base + fill) và muốn fill layer cùng sprite:
+        if (monthFillImage != null && monthlyArt != null)
+            monthFillImage.sprite = monthlyArt.GetSpriteForMonth(month);
+    }
+
 
 }
