@@ -32,7 +32,7 @@ public class GameManager : Singleton<GameManager>
     public void SetLoading(bool v) => IsLoadingLevel = v;
 
     [Header("Boot Loading")]
-    [SerializeField] private float bootLoadingSeconds = 2f;
+    [SerializeField] private float bootLoadingSeconds = 5f;
     private float dailyReturnDelay = 0f;
     private Coroutine returnHomeCR;
 

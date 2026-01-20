@@ -113,6 +113,11 @@ MonoBehaviour:
   headForwardOffsetCells: 0
   headSideOffsetCells: 0
   rotateHeadAlongDirection: 1
+  headYOffsetWorld: -0.2
+  headDownAlongLineCells: 0.25
+  roundStartCap: 1
+  startCapSegments: 10
+  startCapRadiusMul: 1
   turnCells:
   - {x: 2, y: 6}
   - {x: 2, y: 5}
@@ -127,6 +132,10 @@ MonoBehaviour:
   - {x: 4, y: 4}
   lineWidth: 0.18
   material: {fileID: 2100000, guid: 2b861c502a6584fc39f263b46d253b33, type: 2}
+  startFade: 1
+  fadeStartLengthCells: 1.2
+  fadeStartAlpha: 0.15
+  fadeCurve: 1.6
   amplitudeCells: 0.22
   wavelengthCells: 0.8
   phase: 0
@@ -142,10 +151,10 @@ MonoBehaviour:
   cornerSharpness: 2
   moveOnClick: 1
   moveSpeedCellsPerSec: 6
-  moveForever: 1
+  moveForever: 0
   extraOutCells: 6
   destroyAfterMove: 1
-  destroyDelay: 2
+  destroyDelay: 1
   blockIfAhead: 1
   lineLayerMask:
     serializedVersion: 2
@@ -155,3 +164,6 @@ MonoBehaviour:
   returnToStartOnBlock: 1
   returnSpeedCellsPerSec: 12
   returnStopEpsCells: 0.02
+  headAngleOffset: 0
+  flipHeadWhenLeft: 1
+  spineFacesLeftByDefault: 0
