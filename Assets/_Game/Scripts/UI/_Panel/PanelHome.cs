@@ -112,9 +112,9 @@ public class PanelHome : UICanvas
 
         UIManager.Instance.OpenUI<PanelGamePlay>();
 
-        UIManager.Instance.OpenUI<PanelLoading>();
+        // UIManager.Instance.OpenUI<PanelLoading>();
 
-        StartCoroutine(OffPanel());
+        // StartCoroutine(OffPanel());
     }
 
     private void Clear()

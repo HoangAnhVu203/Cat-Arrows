@@ -16,6 +16,7 @@ public class LevelManager : Singleton<LevelManager>
     [SerializeField] private Transform levelRoot;
     [SerializeField] private float loadDelay = 0.05f;
     [SerializeField] private bool saveProgress = true;
+    [SerializeField] private float gameplayLoadingSeconds = 2f;
 
     private int currentLevelIndex = 0;                 // index của mode hiện tại
     private GameObject currentLevelInstance;
@@ -159,12 +160,14 @@ public class LevelManager : Singleton<LevelManager>
 
     private IEnumerator LoadLevelCR(List<GameObject> list, int idx, LevelMode mode)
     {
-        if (GameManager.Instance != null)
-            GameManager.Instance.SetLoading(true);
+        // 1) Bật loading overlay
+        GameManager.Instance?.SetLoading(true);
 
+        // 2) Dọn level cũ
         ClearCurrentLevel();
 
-        if (loadDelay > 0f) yield return new WaitForSeconds(loadDelay);
+        // 3) Delay kỹ thuật
+        if (loadDelay > 0f) yield return new WaitForSecondsRealtime(loadDelay);
         else yield return null;
 
         if (!levelRoot) levelRoot = transform;
@@ -173,23 +176,33 @@ public class LevelManager : Singleton<LevelManager>
         if (!prefab)
         {
             Debug.LogError($"[LevelManager] Prefab NULL at index {idx} mode={mode}");
-            if (GameManager.Instance != null) GameManager.Instance.SetLoading(false);
+            GameManager.Instance?.SetLoading(false);
             yield break;
         }
 
+        // 4) Instantiate level mới
         currentLevelInstance = Instantiate(prefab, levelRoot);
-        currentLevelInstance.name = mode == LevelMode.Normal ? $"Level_Normal_{idx + 1:00}" : $"Level_Daily_{idx + 1:00}";
 
-        if (GameManager.Instance != null)
-            GameManager.Instance.StartLevel();
+        // 5) Start gameplay (mở PanelGamePlay)
+        GameManager.Instance?.StartLevel();
 
+        // >>> QUAN TRỌNG: vì PanelGamePlay vừa mở xong sẽ đè lên loading
+        GameManager.Instance?.BringLoadingToFront();
+
+        // 6) Update UI
         OnLevelLoaded?.Invoke(idx + 1, list.Count);
 
-        if (GameManager.Instance != null)
-            GameManager.Instance.SetLoading(false);
+        // 7) Giữ loading 2s realtime
+        if (gameplayLoadingSeconds > 0f)
+            yield return new WaitForSecondsRealtime(gameplayLoadingSeconds);
+
+        // 8) Tắt loading
+        GameManager.Instance?.SetLoading(false);
 
         loadCR = null;
     }
+
+
 
     private void ClearCurrentLevel()
     {

@@ -1,0 +1,97 @@
+
+load.png
+size: 1782,1153
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+body
+  rotate: false
+  xy: 493, 14
+  size: 476, 507
+  orig: 476, 507
+  offset: 0, 0
+  index: -1
+bong
+  rotate: true
+  xy: 1442, 42
+  size: 121, 87
+  orig: 123, 89
+  offset: 1, 1
+  index: -1
+bong2
+  rotate: false
+  xy: 632, 525
+  size: 626, 626
+  orig: 628, 628
+  offset: 1, 1
+  index: -1
+bongdo
+  rotate: false
+  xy: 971, 21
+  size: 469, 502
+  orig: 471, 504
+  offset: 1, 1
+  index: -1
+bongngoai
+  rotate: false
+  xy: 2, 523
+  size: 628, 628
+  orig: 630, 630
+  offset: 1, 1
+  index: -1
+bung
+  rotate: true
+  xy: 1260, 528
+  size: 210, 248
+  orig: 212, 250
+  offset: 1, 1
+  index: -1
+eye1
+  rotate: false
+  xy: 1732, 1072
+  size: 30, 30
+  orig: 32, 32
+  offset: 1, 1
+  index: -1
+eye2
+  rotate: false
+  xy: 1732, 1072
+  size: 30, 30
+  orig: 32, 32
+  offset: 1, 1
+  index: -1
+ria
+  rotate: false
+  xy: 1510, 553
+  size: 259, 185
+  orig: 261, 187
+  offset: 1, 1
+  index: -1
+star
+  rotate: false
+  xy: 1732, 1104
+  size: 48, 47
+  orig: 50, 49
+  offset: 1, 1
+  index: -1
+taychan
+  rotate: false
+  xy: 1260, 740
+  size: 470, 411
+  orig: 472, 413
+  offset: 1, 1
+  index: -1
+vangbung
+  rotate: false
+  xy: 1442, 165
+  size: 327, 361
+  orig: 329, 364
+  offset: 1, 1
+  index: -1
+vien
+  rotate: false
+  xy: 2, 2
+  size: 489, 519
+  orig: 491, 521
+  offset: 1, 1
+  index: -1

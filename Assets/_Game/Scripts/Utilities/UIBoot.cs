@@ -18,6 +18,7 @@ public class UIBoot : MonoBehaviour
         // 3) Mở UI chính
         UIManager.Instance.OpenUI<PanelHome>();
         UIManager.Instance.OpenUI<PanelCalendar>();
+        UIManager.Instance.OpenUI<PanelLock>();
         UIManager.Instance.OpenUI<FooterTabBar>();
         UIManager.Instance.CloseUIDirectly<PanelCalendar>();
 

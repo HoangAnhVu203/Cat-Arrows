@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using CandyCoded.HapticFeedback;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class GameManager : Singleton<GameManager>
 {
@@ -12,6 +13,7 @@ public class GameManager : Singleton<GameManager>
 
     [Header("Heart")]
     [SerializeField] private int maxHeart = 3;
+    private PanelLoading loadingPanel;
     private int currentHeart;
 
     public int MaxHeart => maxHeart;
@@ -29,7 +31,22 @@ public class GameManager : Singleton<GameManager>
     public bool ShowPathMode { get; private set; }
     public bool HintMode { get; private set; }
 
-    public void SetLoading(bool v) => IsLoadingLevel = v;
+    public void SetLoading(bool v)
+    {
+        IsLoadingLevel = v;
+
+        if (v)
+        {
+            loadingPanel = UIManager.Instance.OpenUI<PanelLoading>();
+            BringLoadingToFront();
+        }
+        else
+        {
+            UIManager.Instance.CloseUIDirectly<PanelLoading>();
+            loadingPanel = null;
+        }
+    }
+
 
     [Header("Boot Loading")]
     [SerializeField] private float bootLoadingSeconds = 10f;
@@ -250,4 +267,16 @@ public class GameManager : Singleton<GameManager>
         returnHomeCR = null;
     }
 
+     public void BringLoadingToFront()
+    {
+        if (loadingPanel == null) return;
+
+        // Đưa lên top theo sibling
+        loadingPanel.transform.SetAsLastSibling();
+
+        // Nếu PanelLoading có Canvas override sorting thì cũng set luôn
+        var c = loadingPanel.GetComponent<Canvas>();
+        if (c != null && c.overrideSorting)
+            c.sortingOrder = 9999;
+    }
 }
