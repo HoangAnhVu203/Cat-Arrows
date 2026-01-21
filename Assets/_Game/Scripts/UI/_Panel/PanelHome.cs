@@ -111,6 +111,10 @@ public class PanelHome : UICanvas
         UIManager.Instance.CloseUIDirectly<FooterTabBar>();
 
         UIManager.Instance.OpenUI<PanelGamePlay>();
+
+        UIManager.Instance.OpenUI<PanelLoading>();
+
+        StartCoroutine(OffPanel());
     }
 
     private void Clear()
@@ -123,5 +127,12 @@ public class PanelHome : UICanvas
     public void SettingBTN()
     {
         UIManager.Instance.OpenUI<PanelSetting>();
+    }
+
+    IEnumerator OffPanel()
+    {
+        yield return new WaitForSeconds(2.0f);
+
+        UIManager.Instance.CloseUIDirectly<PanelLoading>();
     }
 }

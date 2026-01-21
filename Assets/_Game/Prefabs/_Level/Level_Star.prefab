@@ -111,7 +111,7 @@ MonoBehaviour:
   dotSize: 0.08
   dotSprite: {fileID: 0}
   dotSortingOrder: -1
-  dotColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+  dotColor: {r: 1, g: 0.6650944, b: 0.6650944, a: 1}
 --- !u!1001 &156111485122063437
 PrefabInstance:
   m_ObjectHideFlags: 0
