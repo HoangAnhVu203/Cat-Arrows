@@ -121,6 +121,11 @@ public class GridWavyLineMesh : MonoBehaviour
     bool _hinted;
     int _hintHeadSortBackup;
     Renderer _headRenderer;
+    // ===== Anim lock (prevent overriding) =====
+    bool _animLock;
+    float _animLockUntil;
+    Coroutine _handleAnimCR;
+
 
     // path (centerline in local)
     List<Vector3> basePtsLocal;
@@ -357,7 +362,7 @@ public class GridWavyLineMesh : MonoBehaviour
             GameManager.Instance.SetHintMode(false);
         }
 
-        if (head) head.AnimationState.SetAnimation(0, "idle2", true);
+        SetBaseAnimSafe("idle2", true);
 
         bool canMove = true;
 
@@ -374,11 +379,11 @@ public class GridWavyLineMesh : MonoBehaviour
 
         if (!canMove)
         {
-            EnableCollider();
-            if (GameManager.Instance != null)
-                GameManager.Instance.LoseHeart();
+            OnBlockedNowOrDuringMove();
             return;
         }
+
+
 
         StartMove();
     }
@@ -404,8 +409,6 @@ public class GridWavyLineMesh : MonoBehaviour
     {
         isMoving = true;
 
-        // Giữ nguyên chức năng: nếu !destroyAfterMove thì collider vẫn bật như code gốc.
-        // Nhưng tối ưu: collider KHÔNG rebuild mỗi frame, mà rebuild theo tần suất colliderRebuildHzWhileMoving.
         if (!destroyAfterMove)
             EnableCollider();
 
@@ -449,7 +452,6 @@ public class GridWavyLineMesh : MonoBehaviour
             // Visual mỗi frame
             RebuildVisualOnly_Internal();
 
-            // Collider theo tick (giảm CPU rất mạnh)
             if (!destroyAfterMove && poly != null && poly.enabled)
             {
                 if (Time.time >= _nextColliderRebuildTime)
@@ -466,7 +468,6 @@ public class GridWavyLineMesh : MonoBehaviour
 
         isMoving = false;
 
-        // Kết thúc: rebuild full 1 lần để collider khớp hoàn toàn (giữ đúng chức năng click/overlap)
         RebuildVisualAndCollider();
 
         if (destroyAfterMove && !endedByBlock)
@@ -484,8 +485,6 @@ public class GridWavyLineMesh : MonoBehaviour
 
         movingOffset = from;
 
-        // Giữ nguyên: trong lúc return, collider có thể đang bật (do EnableCollider ở MoveRoutine)
-        // Tối ưu: vẫn rebuild collider theo tick.
         while (Mathf.Abs(movingOffset - to) > eps)
         {
             movingOffset = Mathf.MoveTowards(movingOffset, to, v * Time.deltaTime);
@@ -507,7 +506,6 @@ public class GridWavyLineMesh : MonoBehaviour
 
         movingOffset = to;
 
-        // Kết thúc return: rebuild full 1 lần
         RebuildVisualAndCollider();
 
         EnableCollider();
@@ -1247,8 +1245,9 @@ public class GridWavyLineMesh : MonoBehaviour
         if (!poly) return;
         poly.enabled = true;
 
-        // giữ nguyên hành vi animation
-        StartCoroutine(HandleAnim(2f));
+        // stop coroutine cũ để không có nhiều cái cùng set idle1
+        if (_handleAnimCR != null) StopCoroutine(_handleAnimCR);
+        _handleAnimCR = StartCoroutine(HandleAnim(2f));
     }
 
     void DisableCollider()
@@ -1261,9 +1260,10 @@ public class GridWavyLineMesh : MonoBehaviour
     {
         yield return new WaitForSeconds(time);
 
-        if (head != null && head.AnimationState != null)
-            head.AnimationState.SetAnimation(0, "idle1", true);
+        // dùng safe setter để không cắt idle3
+        SetBaseAnimSafe("idle1", true);
     }
+
 
     void EraseSelf()
     {
@@ -1376,7 +1376,7 @@ public class GridWavyLineMesh : MonoBehaviour
                 _headRenderer.sortingOrder = meshRenderer.sortingOrder + 1;
             }
 
-            if (head) head.AnimationState.SetAnimation(0, "idle2", true);
+            SetBaseAnimSafe("idle2", true);
             _hinted = true;
         }
         else if (!on && _hinted)
@@ -1386,7 +1386,7 @@ public class GridWavyLineMesh : MonoBehaviour
             if (_headRenderer != null)
                 _headRenderer.sortingOrder = _hintHeadSortBackup;
 
-            if (head) head.AnimationState.SetAnimation(0, "idle1", true);
+            SetBaseAnimSafe("idle1", true);
             _hinted = false;
         }
     }
@@ -1395,8 +1395,56 @@ public class GridWavyLineMesh : MonoBehaviour
     {
         if (head == null || head.AnimationState == null) return;
 
+        var anim = head.Skeleton?.Data?.FindAnimation("idle3");
+        float dur = (anim != null) ? anim.Duration : 0.5f;
+
+        _animLock = true;
+        _animLockUntil = Time.time + dur;
+
+        if (_handleAnimCR != null) StopCoroutine(_handleAnimCR);
+        _handleAnimCR = null;
+
         head.AnimationState.SetAnimation(0, "idle3", false);
         head.AnimationState.AddAnimation(0, "idle1", true, 0f);
+
+        StartCoroutine(ReleaseAnimLockAfter(dur + 0.05f));
+    }
+
+    IEnumerator ReleaseAnimLockAfter(float t)
+    {
+        yield return new WaitForSeconds(t);
+        _animLock = false;
+    }
+
+
+    void SetBaseAnimSafe(string animName, bool loop)
+    {
+        if (head == null || head.AnimationState == null) return;
+
+        // Nếu đang khóa (idle3 đang chạy) thì bỏ qua set idle2/idle1
+        if (_animLock && Time.time < _animLockUntil) return;
+
+        head.AnimationState.SetAnimation(0, animName, loop);
+    }
+
+    void OnBlockedNowOrDuringMove()
+    {
+        // đảm bảo idle3 luôn được ưu tiên
+        PlayHeadAnim3_OnBlock();
+
+        // giữ đúng logic game hiện tại
+        EnableCollider();
+
+        if (GameManager.Instance != null)
+            GameManager.Instance.LoseHeart();
+
+        // nếu muốn “blocked ngay” cũng bật return về 0 giống như khi đang move
+        // (tuỳ bạn, không bắt buộc)
+        // if (returnToStartOnBlock)
+        // {
+        //     if (returnCR != null) StopCoroutine(returnCR);
+        //     returnCR = StartCoroutine(ReturnRoutine(movingOffset, 0f));
+        // }
     }
 
 }
