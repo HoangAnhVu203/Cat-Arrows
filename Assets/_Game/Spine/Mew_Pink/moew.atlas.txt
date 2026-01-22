@@ -34,14 +34,14 @@ box2
   index: -1
 eye1
   rotate: false
-  xy: 1807, 193
+  xy: 1859, 93
   size: 53, 53
   orig: 55, 55
   offset: 1, 1
   index: -1
 eye2
   rotate: false
-  xy: 1807, 193
+  xy: 1859, 93
   size: 53, 53
   orig: 55, 55
   offset: 1, 1
@@ -52,6 +52,20 @@ eye3
   size: 280, 162
   orig: 282, 164
   offset: 1, 1
+  index: -1
+eye4
+  rotate: true
+  xy: 1794, 89
+  size: 57, 63
+  orig: 59, 66
+  offset: 1, 2
+  index: -1
+eye5
+  rotate: false
+  xy: 1734, 84
+  size: 58, 62
+  orig: 60, 66
+  offset: 1, 3
   index: -1
 hand1
   rotate: true
@@ -83,21 +97,21 @@ leg2
   index: -1
 mouth1
   rotate: false
-  xy: 1867, 201
+  xy: 1867, 11
   size: 91, 45
   orig: 93, 47
   offset: 1, 1
   index: -1
 mouth2
-  rotate: true
-  xy: 1734, 116
+  rotate: false
+  xy: 1914, 75
   size: 83, 71
   orig: 85, 75
   offset: 1, 2
   index: -1
 noise
-  rotate: true
-  xy: 1960, 205
+  rotate: false
+  xy: 1867, 58
   size: 41, 33
   orig: 43, 35
   offset: 1, 1
@@ -107,6 +121,27 @@ raumoew
   xy: 1452, 2
   size: 413, 80
   orig: 415, 83
+  offset: 1, 1
+  index: -1
+star1
+  rotate: true
+  xy: 1734, 148
+  size: 98, 100
+  orig: 100, 102
+  offset: 1, 1
+  index: -1
+star2
+  rotate: true
+  xy: 1734, 148
+  size: 98, 100
+  orig: 100, 102
+  offset: 1, 1
+  index: -1
+star3
+  rotate: true
+  xy: 1867, 148
+  size: 98, 100
+  orig: 100, 102
   offset: 1, 1
   index: -1
 tai1

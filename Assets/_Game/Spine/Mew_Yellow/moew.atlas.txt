@@ -1,124 +1,159 @@
 
 moew.png
-size: 2001,914
+size: 2001,929
 format: RGBA8888
 filter: Linear,Linear
 repeat: none
 body
   rotate: false
-  xy: 1428, 233
+  xy: 1428, 248
   size: 571, 679
   orig: 573, 681
   offset: 1, 1
   index: -1
 body2
   rotate: false
-  xy: 837, 212
+  xy: 837, 227
   size: 589, 700
   orig: 591, 702
   offset: 1, 1
   index: -1
 box1
   rotate: true
-  xy: 609, 186
+  xy: 609, 201
   size: 726, 226
   orig: 728, 228
   offset: 1, 1
   index: -1
 box2
   rotate: true
-  xy: 2, 186
+  xy: 2, 201
   size: 726, 605
   orig: 728, 607
   offset: 1, 1
   index: -1
 eye1
   rotate: false
-  xy: 837, 49
+  xy: 1734, 193
   size: 53, 53
   orig: 55, 55
   offset: 1, 1
   index: -1
 eye2
   rotate: false
-  xy: 1881, 178
+  xy: 1858, 93
   size: 53, 53
   orig: 55, 55
   offset: 1, 1
   index: -1
 eye3
   rotate: false
-  xy: 555, 39
-  size: 280, 63
-  orig: 282, 66
+  xy: 1452, 84
+  size: 280, 162
+  orig: 282, 164
+  offset: 1, 1
+  index: -1
+eye4
+  rotate: false
+  xy: 1734, 84
+  size: 57, 62
+  orig: 59, 66
+  offset: 1, 3
+  index: -1
+eye5
+  rotate: true
+  xy: 1793, 88
+  size: 58, 63
+  orig: 60, 66
   offset: 1, 2
   index: -1
 hand1
   rotate: true
-  xy: 1203, 22
+  xy: 231, 11
   size: 188, 222
   orig: 190, 224
   offset: 1, 1
   index: -1
 hand2
   rotate: true
-  xy: 2, 10
+  xy: 455, 25
   size: 174, 235
   orig: 176, 237
   offset: 1, 1
   index: -1
 leg1
-  rotate: false
-  xy: 1428, 4
+  rotate: true
+  xy: 2, 6
   size: 193, 227
   orig: 195, 229
   offset: 1, 1
   index: -1
 leg2
   rotate: true
-  xy: 239, 14
+  xy: 692, 29
   size: 170, 241
   orig: 172, 243
   offset: 1, 1
   index: -1
 mouth1
-  rotate: true
-  xy: 482, 93
+  rotate: false
+  xy: 1867, 46
   size: 91, 45
   orig: 93, 47
   offset: 1, 1
   index: -1
 mouth2
   rotate: true
-  xy: 482, 8
+  xy: 1793, 163
   size: 83, 71
   orig: 85, 75
   offset: 1, 2
   index: -1
 noise
-  rotate: false
-  xy: 555, 4
+  rotate: true
+  xy: 1734, 150
   size: 41, 33
   orig: 43, 35
   offset: 1, 1
   index: -1
 raumoew
   rotate: false
-  xy: 529, 104
+  xy: 1452, 2
   size: 413, 80
   orig: 415, 83
   offset: 1, 1
   index: -1
+star3
+  rotate: true
+  xy: 1867, 148
+  size: 98, 100
+  orig: 100, 102
+  offset: 1, 1
+  index: -1
+star1
+  rotate: true
+  xy: 1867, 148
+  size: 98, 100
+  orig: 100, 102
+  offset: 1, 1
+  index: -1
+star2
+  rotate: true
+  xy: 1867, 148
+  size: 98, 100
+  orig: 100, 102
+  offset: 1, 1
+  index: -1
 tai1
   rotate: true
-  xy: 944, 2
+  xy: 1193, 17
   size: 208, 257
   orig: 210, 259
   offset: 1, 1
   index: -1
 tai2
   rotate: true
-  xy: 1623, 9
+  xy: 935, 3
   size: 222, 256
   orig: 224, 258
   offset: 1, 1

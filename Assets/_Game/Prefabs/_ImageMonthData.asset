@@ -12,16 +12,28 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ffef9c18aba7af74cb0e556bfb432b8a, type: 3}
   m_Name: _ImageMonthData
   m_EditorClassIdentifier: Assembly-CSharp::MonthlyArtConfig
-  monthSprites:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
+  months:
+  - baseSprite: {fileID: 21300000, guid: 423dae023eb8140db8c64c01a2c35ac6, type: 3}
+    fillSprite: {fileID: 21300000, guid: ca666b3ef0b9a46f1a83392a1cb4856c, type: 3}
+  - baseSprite: {fileID: 21300000, guid: 6801d3d48db3746d4a5a662d27832e80, type: 3}
+    fillSprite: {fileID: 21300000, guid: 52e56399b6d534737beb5d0788be5c3d, type: 3}
+  - baseSprite: {fileID: 21300000, guid: 7fa4be4c5b6ac4b99b6142c82244904d, type: 3}
+    fillSprite: {fileID: 21300000, guid: 4e05942d8ea514eb29485358671f3541, type: 3}
+  - baseSprite: {fileID: 21300000, guid: cfe04bde53d3947eea94cd09b4c455f8, type: 3}
+    fillSprite: {fileID: 21300000, guid: 78e74b611d0184b4d91f2db973ba5be1, type: 3}
+  - baseSprite: {fileID: 21300000, guid: 9f3f46aa6f3514aee86fa6b2f0a34896, type: 3}
+    fillSprite: {fileID: 21300000, guid: b144f7f0add42464ebda98834ae5defc, type: 3}
+  - baseSprite: {fileID: 21300000, guid: e7e978162f85d455a98445ef4a33d0ed, type: 3}
+    fillSprite: {fileID: 21300000, guid: be1d4e73c7f684d88a8041405a6821dd, type: 3}
+  - baseSprite: {fileID: 21300000, guid: 9e7a0338cef2147dc850ff24b30885e7, type: 3}
+    fillSprite: {fileID: 21300000, guid: 6b4e34aa0a4814558adbf6d670f6cedb, type: 3}
+  - baseSprite: {fileID: 21300000, guid: 762c5370cc3374bf48380b4ce37d0cd3, type: 3}
+    fillSprite: {fileID: 21300000, guid: 0dc898ffcf02a40f9b124e5a87021c4a, type: 3}
+  - baseSprite: {fileID: 21300000, guid: a325fd926d35b48f2854794eaf893ad7, type: 3}
+    fillSprite: {fileID: 21300000, guid: 571cc4d3b46614fe4b58472a64d7ba38, type: 3}
+  - baseSprite: {fileID: 21300000, guid: 5cbdcfb2e94c54cf58ea562dfd5d2196, type: 3}
+    fillSprite: {fileID: 21300000, guid: 0687b5f1028ae4125a9f12b47ac971ff, type: 3}
+  - baseSprite: {fileID: 21300000, guid: 7684a4cb60ce74ada9f363418eb39bca, type: 3}
+    fillSprite: {fileID: 21300000, guid: e2e93b3e7508246b89889519858610fd, type: 3}
+  - baseSprite: {fileID: 21300000, guid: 56276a9e7df83440cb78a5966ddf5796, type: 3}
+    fillSprite: {fileID: 21300000, guid: 6cb750f4ad94948b592bf87a0879f68d, type: 3}

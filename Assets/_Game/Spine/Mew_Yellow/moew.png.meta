@@ -65,6 +65,15 @@ TextureImporter:
   - first:
       213: 8754914346464544083
     second: moew_20
+  - first:
+      213: -8218724646957308053
+    second: moew_21
+  - first:
+      213: 3325338969110771687
+    second: moew_22
+  - first:
+      213: 3246800909612856316
+    second: moew_23
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -157,20 +166,7 @@ TextureImporter:
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 1
   - serializedVersion: 4
-    buildTarget: Android
-    maxTextureSize: 2048
-    resizeAlgorithm: 0
-    textureFormat: -1
-    textureCompression: 0
-    compressionQuality: 50
-    crunchedCompression: 0
-    allowsAlphaSplitting: 0
-    overridden: 0
-    ignorePlatformSupport: 0
-    androidETC2FallbackOverride: 0
-    forceMaximumCompressionQuality_BC6H_BC7: 1
-  - serializedVersion: 4
-    buildTarget: iOS
+    buildTarget: WebGL
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1

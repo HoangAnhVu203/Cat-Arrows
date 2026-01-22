@@ -427,6 +427,9 @@ public class GridWavyLineMesh : MonoBehaviour
                 if (IsBlockedStep(movingOffset, nextOffset))
                 {
                     endedByBlock = true;
+
+                    PlayHeadAnim3_OnBlock();
+
                     if (GameManager.Instance != null)
                         GameManager.Instance.LoseHeart();
 
@@ -438,6 +441,7 @@ public class GridWavyLineMesh : MonoBehaviour
                     }
                     break;
                 }
+
             }
 
             movingOffset = nextOffset;
@@ -1386,4 +1390,13 @@ public class GridWavyLineMesh : MonoBehaviour
             _hinted = false;
         }
     }
+
+    void PlayHeadAnim3_OnBlock()
+    {
+        if (head == null || head.AnimationState == null) return;
+
+        head.AnimationState.SetAnimation(0, "idle3", false);
+        head.AnimationState.AddAnimation(0, "idle1", true, 0f);
+    }
+
 }
