@@ -30,6 +30,7 @@ public class GameManager : Singleton<GameManager>
     public bool EraseMode { get; private set; }
     public bool ShowPathMode { get; private set; }
     public bool HintMode { get; private set; }
+    private const string PREF_BOOT_TUTORIAL_DONE = "BOOT_TUTORIAL_DONE";
 
     public void SetLoading(bool v)
     {
@@ -52,7 +53,7 @@ public class GameManager : Singleton<GameManager>
     [SerializeField] private float bootLoadingSeconds = 10f;
     private float dailyReturnDelay = 0f;
     private Coroutine returnHomeCR;
-
+    public bool BootTutorialActive { get; private set; }
 
     private bool booted;
 
@@ -74,6 +75,18 @@ public class GameManager : Singleton<GameManager>
         //StartCoroutine(BootRoutine());
         UIManager.Instance.OpenUI<PanelLoading>();
         StartCoroutine(OffPanel());
+
+    }
+
+    public bool IsBootTutorialDone()
+    {
+        return PlayerPrefs.GetInt(PREF_BOOT_TUTORIAL_DONE, 0) == 1;
+    }
+
+    public void MarkBootTutorialDone()
+    {
+        PlayerPrefs.SetInt(PREF_BOOT_TUTORIAL_DONE, 1);
+        PlayerPrefs.Save();
     }
 
     IEnumerator OffPanel()
@@ -81,6 +94,22 @@ public class GameManager : Singleton<GameManager>
         yield return new WaitForSeconds(5.0f);
 
         UIManager.Instance.CloseUIDirectly<PanelLoading>();
+    }
+
+    public void SetBootTutorial(bool on)
+    {
+        BootTutorialActive = on;
+
+        if (on)
+        {
+            // Trong tutorial: không cho PanelGamePlay bật lên
+            UIManager.Instance.CloseUIDirectly<PanelHome>();
+            UIManager.Instance.CloseUIDirectly<FooterTabBar>();
+            UIManager.Instance.CloseUIDirectly<PanelCalendar>();
+            UIManager.Instance.CloseUIDirectly<PanelWin>();
+            UIManager.Instance.CloseUIDirectly<PanelFail>();
+            UIManager.Instance.CloseUIDirectly<PanelGamePlay>();
+        }
     }
 
     //private IEnumerator BootRoutine()
@@ -141,18 +170,28 @@ public class GameManager : Singleton<GameManager>
     private void EnterGamePlay()
     {
         Time.timeScale = 1f;
-        UIManager.Instance.OpenUI<PanelGamePlay>();
+
+        if (!BootTutorialActive)
+            UIManager.Instance.OpenUI<PanelGamePlay>();
+
         Debug.Log("[GameState] GamePlay");
     }
+
 
    void EnterWin()
     {
         Time.timeScale = 1f;
 
+        // Nếu là tutorial level 0: về home + set progress -> level 1
+        if (BootTutorialActive)
+        {
+            StartCoroutine(ReturnHomeAfterTutorialCR());
+            return;
+        }
+
         UIManager.Instance.OpenUI<PanelWin>();
         UIManager.Instance.CloseUIDirectly<PanelGamePlay>();
 
-        // DAILY: auto về home
         if (LevelManager.Instance != null && LevelManager.Instance.CurrentMode == LevelManager.LevelMode.Daily)
         {
             StartReturnHomeFromDaily();
@@ -160,7 +199,6 @@ public class GameManager : Singleton<GameManager>
             if (d != default)
                 DailyProgress.SetWin(d, true);
         }
-            
 
         Debug.Log("[GameState] WIN");
     }
@@ -169,10 +207,15 @@ public class GameManager : Singleton<GameManager>
     {
         Time.timeScale = 1f;
 
+        if (BootTutorialActive)
+        {
+            StartCoroutine(ReturnHomeAfterTutorialCR());
+            return;
+        }
+
         UIManager.Instance.OpenUI<PanelFail>();
         UIManager.Instance.CloseUIDirectly<PanelGamePlay>();
 
-        // DAILY: auto về home
         if (LevelManager.Instance != null && LevelManager.Instance.CurrentMode == LevelManager.LevelMode.Daily)
             StartReturnHomeFromDaily();
 
@@ -279,4 +322,38 @@ public class GameManager : Singleton<GameManager>
         if (c != null && c.overrideSorting)
             c.sortingOrder = 9999;
     }
+
+    private IEnumerator ReturnHomeAfterTutorialCR()
+    {
+        SetLoading(true);
+
+        UIManager.Instance.CloseUIDirectly<PanelWin>();
+        UIManager.Instance.CloseUIDirectly<PanelFail>();
+        UIManager.Instance.CloseUIDirectly<PanelGamePlay>();
+
+        if (LevelManager.Instance != null)
+            LevelManager.Instance.ClearLevelOnly();
+
+        yield return new WaitForSecondsRealtime(1.0f);
+
+        // QUAN TRỌNG: đánh dấu đã xong tutorial (để lần sau không vào nữa)
+        MarkBootTutorialDone();
+
+        // Set progress sang level 1 (index=1) để Play sau đó chạy như cũ
+        if (LevelManager.Instance != null)
+            LevelManager.Instance.ForceSetNormalProgressIndex(1);
+
+        SetBootTutorial(false);
+
+        UIManager.Instance.OpenUI<PanelHome>();
+         UIManager.Instance.OpenUI<PanelCalendar>();
+        UIManager.Instance.OpenUI<FooterTabBar>();
+        var tab = FindObjectOfType<TabTransitionController>(true);
+        if (tab != null) tab.RefreshAfterUIOpened();
+
+        UIManager.Instance.CloseUIDirectly<PanelCalendar>();
+
+        SetLoading(false);
+    }
+
 }

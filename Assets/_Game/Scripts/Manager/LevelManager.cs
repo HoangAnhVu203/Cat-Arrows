@@ -243,4 +243,40 @@ public class LevelManager : Singleton<LevelManager>
         currentLevelIndex = saved;   // chỉ set index thôi, KHÔNG load prefab
     }
 
+    public void ClearLevelOnly()
+    {
+        ClearCurrentLevel();
+    }
+
+    public void ForceSetNormalProgressIndex(int idx)
+    {
+        if (levelsNormal == null || levelsNormal.Count == 0) return;
+
+        idx = Mathf.Clamp(idx, 0, levelsNormal.Count - 1);
+        currentMode = LevelMode.Normal;
+        currentLevelIndex = idx;
+
+        if (saveProgress)
+        {
+            PlayerPrefs.SetInt(PREF_LEVEL_INDEX, currentLevelIndex);
+            PlayerPrefs.Save();
+        }
+    }
+    public void LoadBootLevel0()
+    {
+        if (levelsNormal == null || levelsNormal.Count == 0)
+        {
+            Debug.LogError("[LevelManager] Normal levels list is empty!");
+            return;
+        }
+
+        currentMode = LevelMode.Normal;
+        currentLevelIndex = 0;
+
+        if (loadCR != null) StopCoroutine(loadCR);
+        loadCR = StartCoroutine(LoadLevelCR(levelsNormal, 0, LevelMode.Normal));
+    }
+
+
+
 }

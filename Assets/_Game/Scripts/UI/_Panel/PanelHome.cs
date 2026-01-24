@@ -29,6 +29,8 @@ public class PanelHome : UICanvas
 
         if (buildCo != null) StopCoroutine(buildCo);
         buildCo = StartCoroutine(BuildWhenReady());
+
+        Debug.LogError("PANEL HOME ENABLED\n" + System.Environment.StackTrace);
     }
 
     private void OnDisable()
