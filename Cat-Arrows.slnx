@@ -78,6 +78,7 @@
   <Project Path="Unity.VisualScripting.Shared.Editor.csproj" />
   <Project Path="KinoBloom.Runtime.csproj" />
   <Project Path="Unity.2D.Aseprite.Common.csproj" />
+  <Project Path="Unity.EditorCoroutines.Editor.csproj" />
   <Project Path="spine-unity-examples-editor.csproj" />
   <Project Path="Unity.CollabProxy.Editor.csproj" />
   <Project Path="CandyCoded.HapticFeedback.iOS.csproj" />
