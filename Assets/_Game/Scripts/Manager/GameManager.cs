@@ -284,9 +284,7 @@ public class GameManager : Singleton<GameManager>
 
         if (IsLoadingLevel) return;
 
-        if (currentState == GameState.GamePlay &&
-            currentHeart > 0 &&
-            activeLineCount == 0)
+        if (currentState == GameState.GamePlay && currentHeart > 0 && activeLineCount == 0)
         {
             winTriggered = true;
             ChangeState(GameState.Win);
@@ -389,7 +387,7 @@ public class GameManager : Singleton<GameManager>
 
     IEnumerator WaitWin()
     {
-        yield return new WaitForSeconds(0.5f);
+        yield return new WaitForSeconds(0.75f);
 
         UIManager.Instance.OpenUI<PanelWin>();
     }
@@ -408,8 +406,6 @@ public class GameManager : Singleton<GameManager>
             ChangeState(GameState.Win);
         }
     }
-
-
 
     public void ResetLevelRuntimeState()
     {

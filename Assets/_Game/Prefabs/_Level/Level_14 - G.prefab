@@ -232,6 +232,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 1646319188635065345, guid: 1da5f0189318c45519a60890cba0e82f, type: 3}
     - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
+      propertyPath: extraOutCells
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
       propertyPath: wavelengthCells
       value: 0.8
       objectReference: {fileID: 0}
@@ -418,6 +422,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 390701290883051323, guid: 30ce1d724f70a4fbaa9b0eebc85f115c, type: 3}
     - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
+      propertyPath: extraOutCells
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
       propertyPath: wavelengthCells
       value: 0.8
       objectReference: {fileID: 0}
@@ -603,6 +611,10 @@ PrefabInstance:
       propertyPath: headPrefab
       value: 
       objectReference: {fileID: 4646788351843231897, guid: 506397e87ecea461193d41aa59178214, type: 3}
+    - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
+      propertyPath: extraOutCells
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
       propertyPath: wavelengthCells
       value: 0.8
@@ -794,6 +806,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 4646788351843231897, guid: 506397e87ecea461193d41aa59178214, type: 3}
     - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
+      propertyPath: extraOutCells
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
       propertyPath: wavelengthCells
       value: 0.8
       objectReference: {fileID: 0}
@@ -979,6 +995,10 @@ PrefabInstance:
       propertyPath: headPrefab
       value: 
       objectReference: {fileID: 275396658137533965, guid: ecb0e22510de64a51b109aa66fee55e5, type: 3}
+    - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
+      propertyPath: extraOutCells
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
       propertyPath: wavelengthCells
       value: 0.8
@@ -1169,6 +1189,10 @@ PrefabInstance:
       propertyPath: headPrefab
       value: 
       objectReference: {fileID: 944124422934261304, guid: 21aeb48728bb741c095a0540466fae22, type: 3}
+    - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
+      propertyPath: extraOutCells
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
       propertyPath: wavelengthCells
       value: 0.8
