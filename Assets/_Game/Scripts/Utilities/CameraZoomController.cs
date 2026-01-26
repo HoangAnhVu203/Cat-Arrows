@@ -9,6 +9,9 @@ public class CameraZoomController : MonoBehaviour
     [Header("Sizes")]
     [SerializeField] private float paddingWorld = 1.5f;
     [SerializeField] private float gameplaySize = 7f;
+    [SerializeField] private float overviewMin = 4f;   
+    [SerializeField] private float overviewMax = 12f;  
+
 
     [Header("Timing")]
     [SerializeField] private float duration = 1.0f;
@@ -19,6 +22,7 @@ public class CameraZoomController : MonoBehaviour
     [SerializeField] private float returnDelay = 0f;
     [SerializeField] private float returnDuration = 0.6f;
     [SerializeField] private AnimationCurve returnEase = AnimationCurve.EaseInOut(0, 0, 1, 1);
+
 
     public bool IsZooming { get; private set; }
 
@@ -42,7 +46,7 @@ public class CameraZoomController : MonoBehaviour
         if (!cam) cam = Camera.main;
         if (!cam) return;
 
-        if (!originCaptured || !captureOriginOnFirstUse)
+        if (!originCaptured)
         {
             originPos = cam.transform.position;
             originSize = cam.orthographicSize;
@@ -58,7 +62,6 @@ public class CameraZoomController : MonoBehaviour
         if (!cam) cam = Camera.main;
         if (!cam || levelRoot == null) return;
 
-        // Lưu gốc trước khi đổi camera
         CaptureOriginIfNeeded();
 
         var b = CalcBounds(levelRoot);
@@ -69,10 +72,12 @@ public class CameraZoomController : MonoBehaviour
         float needHalfW = b.extents.x / Mathf.Max(0.0001f, aspect);
 
         overviewSize = Mathf.Max(needHalfH, needHalfW) + paddingWorld;
+        overviewSize = Mathf.Clamp(overviewSize, overviewMin, overviewMax);
 
         cam.transform.position = overviewPos;
         cam.orthographicSize = overviewSize;
     }
+
 
     /// <summary>
     /// Zoom từ overview về gameplay size. Xong có thể tự trả về gốc.
@@ -166,8 +171,14 @@ public class CameraZoomController : MonoBehaviour
         cam.orthographicSize = endSize;
         cam.transform.position = endPos;
 
+        // ===== QUAN TRỌNG: đồng bộ lại BoardPanController =====
+        var pan = cam.GetComponent<BoardPanController>();
+        if (pan != null)
+            pan.SyncToCurrentCameraAsOrigin(true);
+
         IsZooming = false;
     }
+
 
     /// <summary>
     /// Nếu bạn muốn cập nhật gốc thủ công (ví dụ đổi scene / đổi camera setup).

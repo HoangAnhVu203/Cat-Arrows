@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Unity.Jobs;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
@@ -48,6 +49,7 @@ public class BoardPanController : MonoBehaviour
     private float orthoMinFit;          // zoom out max (size lớn)
     private float orthoMaxIn;           // zoom in max (size nhỏ)
     private float orthoTarget;
+    private float orthoMaxOut;   // zoom out tối đa (size lớn nhất)
 
     // pinch
     private bool pinching;
@@ -61,54 +63,65 @@ public class BoardPanController : MonoBehaviour
     private void Awake()
     {
         if (!cam) cam = Camera.main;
-
-        if (!cam)
-        {
-            Debug.LogError("[BoardPanController] Missing Camera reference.");
-            enabled = false;
-            return;
-        }
+        if (!cam) { enabled = false; return; }
 
         camStartPos = cam.transform.position;
         camTargetPos = camStartPos;
 
+        // set target = size hiện tại trước
+        if (cam.orthographic) orthoTarget = cam.orthographicSize;
+
         SetupZoomLimits();
-        orthoTarget = cam.orthographic ? cam.orthographicSize : 0f;
     }
+
 
     private void OnEnable()
     {
         if (cam && cam.orthographic)
         {
+            if (orthoTarget <= 0f) orthoTarget = cam.orthographicSize;
             SetupZoomLimits();
-            orthoTarget = Mathf.Clamp(cam.orthographicSize, orthoMaxIn, orthoMinFit);
         }
+    }
+
+
+    private void Start()
+    {
+        SyncToCurrentCameraAsOrigin(true);
     }
 
     public void Lock(bool v)
     {
         IsLocked = v;
+
+        if (!cam) cam = Camera.main;
+        if (!cam) return;
+
         if (v)
         {
+            // Đồng bộ trạng thái nội bộ = camera hiện tại
+            camTargetPos = cam.transform.position;
+            camStartPos = camTargetPos;
+            velocity = Vector3.zero;
+
+            // reset input state
             dragging = false;
             pendingDrag = false;
             blockThisPress = false;
             pinching = false;
-            velocity = Vector3.zero;
+
+            // Quan trọng: sync zoom target nếu bạn có zoom nội bộ
+            if (cam.orthographic) orthoTarget = cam.orthographicSize;
         }
     }
+
 
     private void Update()
     {
         if (!cam) return;
 
-        // Chặn input khi cinematic/loading (nếu bạn muốn)
-        if (IsLocked) 
-        {
-            ApplyCameraFollowOnly();
-            ApplyZoomOnly();
-            return;
-        }
+        // Khi cinematic/loading: tuyệt đối không ghi đè camera
+        if (IsLocked) return;
 
         // ===== ZOOM =====
         ApplyZoomOnly();
@@ -194,6 +207,7 @@ public class BoardPanController : MonoBehaviour
     {
         if (!cam || !cam.orthographic) return;
 
+        // orthoInitial = size hiện tại lúc setup (coi như "default" của scene)
         orthoInitial = cam.orthographicSize;
 
         float aspect = cam.aspect;
@@ -206,9 +220,14 @@ public class BoardPanController : MonoBehaviour
 
         orthoMinFit = Mathf.Max(needSizeForWidth, needSizeForHeight);
 
+        // zoom in tối đa (size nhỏ nhất)
         orthoMaxIn = orthoInitial / Mathf.Max(0.0001f, maxZoomInMultiplier);
 
-        orthoTarget = Mathf.Clamp(cam.orthographicSize, orthoMaxIn, orthoMinFit);
+        // zoom out tối đa (size lớn nhất) - KHÔNG được nhỏ hơn size ban đầu
+        orthoMaxOut = Mathf.Max(orthoInitial, orthoMinFit);
+
+        // IMPORTANT: chỉ clamp orthoTarget, không ép camSize hiện tại
+        orthoTarget = Mathf.Clamp(orthoTarget, orthoMaxIn, orthoMaxOut);
     }
 
     private void HandleZoom()
@@ -416,20 +435,29 @@ public class BoardPanController : MonoBehaviour
         return (cam.transform.position - camStartPos).magnitude;
     }
 
-    public void SyncToCurrentCameraAsOrigin()
+    public void SyncToCurrentCameraAsOrigin(bool zeroVelocity = true)
     {
+        if (!cam) cam = Camera.main;
         if (!cam) return;
 
-        camStartPos = cam.transform.position;   // coi vị trí hiện tại là gốc mới
-        camTargetPos = camStartPos;             // target trùng luôn để không bị kéo ngược
-        velocity = Vector3.zero;
+        camStartPos = cam.transform.position;
+        camTargetPos = camStartPos;
+
+        if (zeroVelocity) velocity = Vector3.zero;
+
+        dragging = pendingDrag = false;
+        blockThisPress = false;
+        pinching = false;
 
         if (cam.orthographic)
         {
-            SetupZoomLimits();
-            orthoTarget = Mathf.Clamp(cam.orthographicSize, orthoMaxIn, orthoMinFit);
+            orthoTarget = cam.orthographicSize;
+            SetupZoomLimits(); 
         }
     }
+
+
+
 
     public void SetTargetPosition(Vector3 worldPos, bool setAsOrigin = false)
     {
@@ -444,5 +472,29 @@ public class BoardPanController : MonoBehaviour
             velocity = Vector3.zero;
         }
     }
+
+    public void SnapTo(Vector3 worldPos, bool alsoSetAsOrigin = true)
+    {
+        if (!cam) cam = Camera.main;
+        if (!cam) return;
+
+        // giữ z camera
+        worldPos.z = cam.transform.position.z;
+
+        cam.transform.position = worldPos;
+
+        camTargetPos = worldPos;
+
+        if (alsoSetAsOrigin)
+        {
+            camStartPos = worldPos;
+        }
+
+        velocity = Vector3.zero;
+        dragging = pendingDrag = false;
+        blockThisPress = false;
+        pinching = false;
+    }
+
 
 }
