@@ -6,6 +6,7 @@ public class Level_0 : MonoBehaviour
     [Header("References")]
     [SerializeField] private GameObject targetA;
     [SerializeField] private GameObject targetB;
+    [SerializeField] private GameObject targetC;
 
     [Header("Layer")]
     [SerializeField] private LayerMask lineLayer;
@@ -60,5 +61,8 @@ public class Level_0 : MonoBehaviour
 
         if (targetB != null)
             targetB.SetActive(false);
+
+        if (targetC != null)
+            targetC.SetActive(false);
     }
 }
