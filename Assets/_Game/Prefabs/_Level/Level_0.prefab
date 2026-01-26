@@ -28,7 +28,7 @@ Transform:
   m_GameObject: {fileID: 1706557193590661939}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.2, y: -0.35, z: 0}
+  m_LocalPosition: {x: -0.3, y: -0.35, z: 0}
   m_LocalScale: {x: 0.25, y: 0.25, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -210,7 +210,7 @@ Transform:
   m_GameObject: {fileID: 5491569955148144829}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -2.29, z: 0}
+  m_LocalPosition: {x: -0.5, y: -2.29, z: 0}
   m_LocalScale: {x: 0.7, y: 0.7, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -322,7 +322,7 @@ MonoBehaviour:
   width: 3
   height: 3
   cellSize: 1
-  origin: {x: -1.5, y: -1.5}
+  origin: {x: -2, y: -1.5}
   drawGizmos: 1
   drawRuntimeGrid: 1
   lineWidth: 0.03

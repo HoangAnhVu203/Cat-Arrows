@@ -37,14 +37,19 @@ public class GameManager : Singleton<GameManager>
     public bool HintMode { get; private set; }
     private const string PREF_BOOT_TUTORIAL_DONE = "BOOT_TUTORIAL_DONE";
 
-    public void SetLoading(bool v)
+        public void SetLoading(bool v)
     {
         IsLoadingLevel = v;
 
         if (v)
         {
             loadingPanel = UIManager.Instance.OpenUI<PanelLoading>();
+
+            // Đưa lên top ngay
             BringLoadingToFront();
+
+            // Và đưa lên top lại ở cuối frame (đề phòng UI khác mở sau đó)
+            StartCoroutine(BringLoadingToFrontEndOfFrame());
         }
         else
         {
@@ -182,8 +187,13 @@ public class GameManager : Singleton<GameManager>
         if (!BootTutorialActive)
             UIManager.Instance.OpenUI<PanelGamePlay>();
 
+        // ZOOM IN
+        var camZoom = Camera.main?.GetComponent<CameraZoomController>();
+        camZoom?.ZoomFromOverviewToGameplayCR();
+
         Debug.Log("[GameState] GamePlay");
     }
+
 
 
    void EnterWin()
@@ -406,4 +416,11 @@ public class GameManager : Singleton<GameManager>
         movingLineCount = 0;
         winTriggered = false;
     }
+
+    private IEnumerator BringLoadingToFrontEndOfFrame()
+    {
+        yield return null; // cuối frame
+        BringLoadingToFront();
+    }
+
 }

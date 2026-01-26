@@ -160,44 +160,34 @@ public class LevelManager : Singleton<LevelManager>
 
     private IEnumerator LoadLevelCR(List<GameObject> list, int idx, LevelMode mode)
     {
-        // 1) Bật loading overlay
         GameManager.Instance?.SetLoading(true);
 
-        // 2) Dọn level cũ
         ClearCurrentLevel();
-
-        // 3) Delay kỹ thuật
         if (loadDelay > 0f) yield return new WaitForSecondsRealtime(loadDelay);
         else yield return null;
 
-        if (!levelRoot) levelRoot = transform;
+        currentLevelInstance = Instantiate(list[idx], levelRoot);
 
-        var prefab = list[idx];
-        if (!prefab)
-        {
-            Debug.LogError($"[LevelManager] Prefab NULL at index {idx} mode={mode}");
-            GameManager.Instance?.SetLoading(false);
-            yield break;
-        }
+        // 1) Tính bounds gameplay (để overview đúng, không bị tràn)
+        var zoom = Camera.main.GetComponent<CameraZoomController>();
+        if (zoom != null)
+            zoom.SnapToOverviewOf(currentLevelInstance.transform); // set size + center ngay lập tức
 
-        // 4) Instantiate level mới
-        currentLevelInstance = Instantiate(prefab, levelRoot);
-
-        // 5) Start gameplay (mở PanelGamePlay)
+        // 2) Start gameplay logic
         GameManager.Instance?.StartLevel();
-
-        // >>> QUAN TRỌNG: vì PanelGamePlay vừa mở xong sẽ đè lên loading
         GameManager.Instance?.BringLoadingToFront();
 
-        // 6) Update UI
-        OnLevelLoaded?.Invoke(idx + 1, list.Count);
 
-        // 7) Giữ loading 2s realtime
+        // 3) Giữ loading một chút (nếu bạn muốn)
         if (gameplayLoadingSeconds > 0f)
             yield return new WaitForSecondsRealtime(gameplayLoadingSeconds);
 
-        // 8) Tắt loading
+        // 4) Tắt loading TRƯỚC
         GameManager.Instance?.SetLoading(false);
+
+        // 5) RỒI mới zoom cinematic vào gameplay (lúc này người chơi mới thấy)
+        if (zoom != null)
+            yield return zoom.ZoomFromOverviewToGameplayCR(); // tween vào gameplay
 
         loadCR = null;
     }
