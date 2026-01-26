@@ -318,7 +318,7 @@ MonoBehaviour:
   meshRenderer: {fileID: 5214128197763593871}
   poly: {fileID: 0}
   destroyRoot: {fileID: 1716853651193940772}
-  headPrefab: {fileID: 6370466729488504364, guid: cfb9a33cc673e4be89eb5192865470cf, type: 3}
+  headPrefab: {fileID: 5664826289422495175, guid: 4e5080443d3884dd980e334d07d948e5, type: 3}
   head: {fileID: 0}
   headForwardOffsetCells: 0
   headSideOffsetCells: 0
@@ -336,7 +336,7 @@ MonoBehaviour:
   - {x: 1, y: 1}
   - {x: 0, y: 1}
   lineWidth: 0.35
-  material: {fileID: 2100000, guid: 2de13a8485e8646c0b53332fa20843c9, type: 2}
+  material: {fileID: 2100000, guid: 1c13fa6cd2a7044afbe05b973d92b7fc, type: 2}
   startFade: 1
   fadeStartLengthCells: 0.5
   fadeStartAlpha: 0.65
@@ -357,7 +357,7 @@ MonoBehaviour:
   moveOnClick: 1
   moveSpeedCellsPerSec: 6
   moveForever: 0
-  extraOutCells: 15
+  extraOutCells: 5
   destroyAfterMove: 1
   destroyDelay: 0.1
   blockIfAhead: 1
@@ -372,6 +372,9 @@ MonoBehaviour:
   headAngleOffset: 0
   flipHeadWhenLeft: 1
   spineFacesLeftByDefault: 0
+  maxSampleCount: 360
+  colliderRebuildHzWhileMoving: 12
+  blockCheckHzWhileMoving: 20
 --- !u!1001 &2630827394341684527
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -450,7 +453,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
       propertyPath: extraOutCells
-      value: 15
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
       propertyPath: fadeStartAlpha
@@ -711,7 +714,7 @@ MonoBehaviour:
   meshRenderer: {fileID: 4054558750385094680}
   poly: {fileID: 0}
   destroyRoot: {fileID: 2885035868065735397}
-  headPrefab: {fileID: 6370466729488504364, guid: cfb9a33cc673e4be89eb5192865470cf, type: 3}
+  headPrefab: {fileID: 4646788351843231897, guid: 506397e87ecea461193d41aa59178214, type: 3}
   head: {fileID: 0}
   headForwardOffsetCells: 0.45
   headSideOffsetCells: 0
@@ -725,7 +728,7 @@ MonoBehaviour:
   - {x: 4, y: 5}
   - {x: 4, y: 6}
   lineWidth: 0.35
-  material: {fileID: 2100000, guid: 2de13a8485e8646c0b53332fa20843c9, type: 2}
+  material: {fileID: 2100000, guid: a20c76f5eb99a47969f1f4c5a0002406, type: 2}
   startFade: 1
   fadeStartLengthCells: 0.5
   fadeStartAlpha: 0.65
@@ -746,7 +749,7 @@ MonoBehaviour:
   moveOnClick: 1
   moveSpeedCellsPerSec: 6
   moveForever: 0
-  extraOutCells: 15
+  extraOutCells: 5
   destroyAfterMove: 1
   destroyDelay: 0.1
   blockIfAhead: 1
@@ -761,6 +764,9 @@ MonoBehaviour:
   headAngleOffset: 0
   flipHeadWhenLeft: 1
   spineFacesLeftByDefault: 0
+  maxSampleCount: 360
+  colliderRebuildHzWhileMoving: 12
+  blockCheckHzWhileMoving: 20
 --- !u!1001 &3791867361236831390
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -982,7 +988,7 @@ MonoBehaviour:
   meshRenderer: {fileID: 3862041161516996750}
   poly: {fileID: 0}
   destroyRoot: {fileID: 3776771550509345901}
-  headPrefab: {fileID: 6370466729488504364, guid: cfb9a33cc673e4be89eb5192865470cf, type: 3}
+  headPrefab: {fileID: 275396658137533965, guid: ecb0e22510de64a51b109aa66fee55e5, type: 3}
   head: {fileID: 0}
   headForwardOffsetCells: 0
   headSideOffsetCells: 0
@@ -1000,7 +1006,7 @@ MonoBehaviour:
   - {x: 0, y: 6}
   - {x: 1, y: 6}
   lineWidth: 0.35
-  material: {fileID: 2100000, guid: 2de13a8485e8646c0b53332fa20843c9, type: 2}
+  material: {fileID: 2100000, guid: 122d4fecd0daa4606960b9553a21dfa3, type: 2}
   startFade: 1
   fadeStartLengthCells: 0.5
   fadeStartAlpha: 0.65
@@ -1021,7 +1027,7 @@ MonoBehaviour:
   moveOnClick: 1
   moveSpeedCellsPerSec: 6
   moveForever: 0
-  extraOutCells: 15
+  extraOutCells: 5
   destroyAfterMove: 1
   destroyDelay: 0.1
   blockIfAhead: 1
@@ -1036,6 +1042,9 @@ MonoBehaviour:
   headAngleOffset: 0
   flipHeadWhenLeft: 1
   spineFacesLeftByDefault: 0
+  maxSampleCount: 360
+  colliderRebuildHzWhileMoving: 12
+  blockCheckHzWhileMoving: 20
 --- !u!1001 &4935339377989377945
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1252,7 +1261,7 @@ MonoBehaviour:
   meshRenderer: {fileID: 755565829088223557}
   poly: {fileID: 0}
   destroyRoot: {fileID: 4939177709932625770}
-  headPrefab: {fileID: 6370466729488504364, guid: cfb9a33cc673e4be89eb5192865470cf, type: 3}
+  headPrefab: {fileID: 944124422934261304, guid: 21aeb48728bb741c095a0540466fae22, type: 3}
   head: {fileID: 0}
   headForwardOffsetCells: 0.45
   headSideOffsetCells: 0
@@ -1276,7 +1285,7 @@ MonoBehaviour:
   - {x: 5, y: 5}
   - {x: 5, y: 6}
   lineWidth: 0.35
-  material: {fileID: 2100000, guid: 2de13a8485e8646c0b53332fa20843c9, type: 2}
+  material: {fileID: 2100000, guid: faf0a8cca8fb348df88af31ca92cb198, type: 2}
   startFade: 1
   fadeStartLengthCells: 0.5
   fadeStartAlpha: 0.65
@@ -1297,7 +1306,7 @@ MonoBehaviour:
   moveOnClick: 1
   moveSpeedCellsPerSec: 6
   moveForever: 0
-  extraOutCells: 15
+  extraOutCells: 5
   destroyAfterMove: 1
   destroyDelay: 0.1
   blockIfAhead: 1
@@ -1312,6 +1321,9 @@ MonoBehaviour:
   headAngleOffset: 0
   flipHeadWhenLeft: 1
   spineFacesLeftByDefault: 0
+  maxSampleCount: 360
+  colliderRebuildHzWhileMoving: 12
+  blockCheckHzWhileMoving: 20
 --- !u!4 &4939177709932625770 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 69422001651081459, guid: 3017df66941b443d4851fa38983ce161, type: 3}
@@ -1533,7 +1545,7 @@ MonoBehaviour:
   meshRenderer: {fileID: 7204933957545126995}
   poly: {fileID: 0}
   destroyRoot: {fileID: 6297472091305866260}
-  headPrefab: {fileID: 6370466729488504364, guid: cfb9a33cc673e4be89eb5192865470cf, type: 3}
+  headPrefab: {fileID: 390701290883051323, guid: 30ce1d724f70a4fbaa9b0eebc85f115c, type: 3}
   head: {fileID: 0}
   headForwardOffsetCells: 0.45
   headSideOffsetCells: 0
@@ -1550,7 +1562,7 @@ MonoBehaviour:
   - {x: 3, y: 5}
   - {x: 3, y: 6}
   lineWidth: 0.35
-  material: {fileID: 2100000, guid: 2de13a8485e8646c0b53332fa20843c9, type: 2}
+  material: {fileID: 2100000, guid: e74da1c09a8634d14a07f8db507d4ebd, type: 2}
   startFade: 1
   fadeStartLengthCells: 0.5
   fadeStartAlpha: 0.65
@@ -1571,7 +1583,7 @@ MonoBehaviour:
   moveOnClick: 1
   moveSpeedCellsPerSec: 6
   moveForever: 0
-  extraOutCells: 15
+  extraOutCells: 5
   destroyAfterMove: 1
   destroyDelay: 0.1
   blockIfAhead: 1
@@ -1586,6 +1598,9 @@ MonoBehaviour:
   headAngleOffset: 0
   flipHeadWhenLeft: 1
   spineFacesLeftByDefault: 0
+  maxSampleCount: 360
+  colliderRebuildHzWhileMoving: 12
+  blockCheckHzWhileMoving: 20
 --- !u!4 &6297472091305866260 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 69422001651081459, guid: 3017df66941b443d4851fa38983ce161, type: 3}

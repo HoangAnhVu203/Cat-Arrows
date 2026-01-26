@@ -125,7 +125,7 @@ public class GridWavyLineMesh : MonoBehaviour
     bool _animLock;
     float _animLockUntil;
     Coroutine _handleAnimCR;
-
+    private bool blockedPenaltyConsumed = false;
 
     // path (centerline in local)
     List<Vector3> basePtsLocal;
@@ -198,6 +198,7 @@ public class GridWavyLineMesh : MonoBehaviour
             GameManager.Instance.RegisterLine();
             registeredToGM = true;
         }
+
     }
 
     void Start()
@@ -394,6 +395,8 @@ public class GridWavyLineMesh : MonoBehaviour
         if (basePtsLocal == null || basePtsLocal.Count < 2) return;
 
         DisableCollider();
+        if (GameManager.Instance != null)
+            GameManager.Instance.NotifyLineStartMove();
 
         if (moveCR != null) StopCoroutine(moveCR);
         if (returnCR != null) StopCoroutine(returnCR);
@@ -433,8 +436,11 @@ public class GridWavyLineMesh : MonoBehaviour
 
                     PlayHeadAnim3_OnBlock();
 
-                    if (GameManager.Instance != null)
-                        GameManager.Instance.LoseHeart();
+                    if (!blockedPenaltyConsumed)
+                    {
+                        blockedPenaltyConsumed = true;
+                        GameManager.Instance?.LoseHeart();
+                    }
 
                     if (returnToStartOnBlock)
                     {
@@ -1435,16 +1441,13 @@ public class GridWavyLineMesh : MonoBehaviour
         // giữ đúng logic game hiện tại
         EnableCollider();
 
-        if (GameManager.Instance != null)
-            GameManager.Instance.LoseHeart();
-
-        // nếu muốn “blocked ngay” cũng bật return về 0 giống như khi đang move
-        // (tuỳ bạn, không bắt buộc)
-        // if (returnToStartOnBlock)
-        // {
-        //     if (returnCR != null) StopCoroutine(returnCR);
-        //     returnCR = StartCoroutine(ReturnRoutine(movingOffset, 0f));
-        // }
+        // CHỈ TRỪ HEART 1 LẦN CHO MỖI LINE
+        if (!blockedPenaltyConsumed)
+        {
+            blockedPenaltyConsumed = true;
+            GameManager.Instance?.LoseHeart();
+        }
     }
+
 
 }

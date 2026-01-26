@@ -15,6 +15,11 @@ public class GameManager : Singleton<GameManager>
     [SerializeField] private int maxHeart = 3;
     private PanelLoading loadingPanel;
     private int currentHeart;
+    private int movingLineCount = 0;
+    private bool winTriggered = false;
+
+    [SerializeField] private GameObject VFX1;
+    [SerializeField] private GameObject VFX2;
 
     public int MaxHeart => maxHeart;
     public int CurrentHeart => currentHeart;
@@ -144,11 +149,14 @@ public class GameManager : Singleton<GameManager>
     // ===================== LEVEL =====================
     public void StartLevel()
     {
+        ResetLevelRuntimeState();
+
         currentHeart = maxHeart;
         ChangeState(GameState.GamePlay);
 
         OnHeartChanged?.Invoke(currentHeart, maxHeart);
     }
+
 
     // ===================== STATE MACHINE =====================
     public void ChangeState(GameState newState)
@@ -188,8 +196,11 @@ public class GameManager : Singleton<GameManager>
             StartCoroutine(ReturnHomeAfterTutorialCR());
             return;
         }
+        VFX1.SetActive(true);
+        VFX2.SetActive(true);
 
-        UIManager.Instance.OpenUI<PanelWin>();
+        StartCoroutine(WaitWin());
+        // UIManager.Instance.OpenUI<PanelWin>();
         UIManager.Instance.CloseUIDirectly<PanelGamePlay>();
 
         if (LevelManager.Instance != null && LevelManager.Instance.CurrentMode == LevelManager.LevelMode.Daily)
@@ -258,10 +269,20 @@ public class GameManager : Singleton<GameManager>
     {
         activeLineCount = Mathf.Max(0, activeLineCount - 1);
 
+        // Nếu win đã trigger từ StartMove thì bỏ qua
+        if (winTriggered) return;
+
         if (IsLoadingLevel) return;
-        if (currentState == GameState.GamePlay && currentHeart > 0 && activeLineCount == 0)
+
+        if (currentState == GameState.GamePlay &&
+            currentHeart > 0 &&
+            activeLineCount == 0)
+        {
+            winTriggered = true;
             ChangeState(GameState.Win);
+        }
     }
+
 
     public void SetActiveLineCount(int count)
     {
@@ -356,4 +377,33 @@ public class GameManager : Singleton<GameManager>
         SetLoading(false);
     }
 
+    IEnumerator WaitWin()
+    {
+        yield return new WaitForSeconds(0.5f);
+
+        UIManager.Instance.OpenUI<PanelWin>();
+    }
+
+    public void NotifyLineStartMove()
+    {
+        if (currentState != GameState.GamePlay) return;
+        if (IsLoadingLevel) return;
+        if (winTriggered) return;
+        if (currentHeart <= 0) return;
+
+        if (activeLineCount == 1)
+        {
+            winTriggered = true;
+
+            ChangeState(GameState.Win);
+        }
+    }
+
+
+
+    public void ResetLevelRuntimeState()
+    {
+        movingLineCount = 0;
+        winTriggered = false;
+    }
 }

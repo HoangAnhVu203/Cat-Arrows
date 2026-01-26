@@ -229,11 +229,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
       propertyPath: destroyDelay
-      value: 1
+      value: 0.25
       objectReference: {fileID: 0}
     - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
       propertyPath: extraOutCells
-      value: 15
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
       propertyPath: fadeStartAlpha
@@ -380,7 +380,7 @@ PrefabInstance:
     - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
       propertyPath: material
       value: 
-      objectReference: {fileID: 2100000, guid: 2de13a8485e8646c0b53332fa20843c9, type: 2}
+      objectReference: {fileID: 2100000, guid: a20c76f5eb99a47969f1f4c5a0002406, type: 2}
     - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
       propertyPath: lineWidth
       value: 0.35
@@ -388,18 +388,18 @@ PrefabInstance:
     - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
       propertyPath: headPrefab
       value: 
-      objectReference: {fileID: 6370466729488504364, guid: cfb9a33cc673e4be89eb5192865470cf, type: 3}
+      objectReference: {fileID: 4646788351843231897, guid: 506397e87ecea461193d41aa59178214, type: 3}
     - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
       propertyPath: moveForever
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
       propertyPath: destroyDelay
-      value: 1
+      value: 0.25
       objectReference: {fileID: 0}
     - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
       propertyPath: extraOutCells
-      value: 15
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
       propertyPath: fadeStartAlpha

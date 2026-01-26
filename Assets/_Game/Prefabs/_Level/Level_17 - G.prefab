@@ -152,7 +152,7 @@ PrefabInstance:
     - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
       propertyPath: material
       value: 
-      objectReference: {fileID: 2100000, guid: faf0a8cca8fb348df88af31ca92cb198, type: 2}
+      objectReference: {fileID: 2100000, guid: 1c13fa6cd2a7044afbe05b973d92b7fc, type: 2}
     - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
       propertyPath: lineWidth
       value: 0.3
@@ -160,7 +160,11 @@ PrefabInstance:
     - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
       propertyPath: headPrefab
       value: 
-      objectReference: {fileID: 944124422934261304, guid: 21aeb48728bb741c095a0540466fae22, type: 3}
+      objectReference: {fileID: 5664826289422495175, guid: 4e5080443d3884dd980e334d07d948e5, type: 3}
+    - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
+      propertyPath: destroyDelay
+      value: 0.25
+      objectReference: {fileID: 0}
     - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
       propertyPath: fadeStartAlpha
       value: 0.6
@@ -274,7 +278,7 @@ PrefabInstance:
     - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
       propertyPath: material
       value: 
-      objectReference: {fileID: 2100000, guid: faf0a8cca8fb348df88af31ca92cb198, type: 2}
+      objectReference: {fileID: 2100000, guid: 7649488f141db4481947f452b53fb0f8, type: 2}
     - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
       propertyPath: lineWidth
       value: 0.3
@@ -282,7 +286,11 @@ PrefabInstance:
     - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
       propertyPath: headPrefab
       value: 
-      objectReference: {fileID: 944124422934261304, guid: 21aeb48728bb741c095a0540466fae22, type: 3}
+      objectReference: {fileID: 1646319188635065345, guid: 1da5f0189318c45519a60890cba0e82f, type: 3}
+    - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
+      propertyPath: destroyDelay
+      value: 0.25
+      objectReference: {fileID: 0}
     - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
       propertyPath: fadeStartAlpha
       value: 0.6
@@ -410,6 +418,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 944124422934261304, guid: 21aeb48728bb741c095a0540466fae22, type: 3}
     - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
+      propertyPath: destroyDelay
+      value: 0.25
+      objectReference: {fileID: 0}
+    - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
       propertyPath: fadeStartAlpha
       value: 0.6
       objectReference: {fileID: 0}
@@ -522,7 +534,7 @@ PrefabInstance:
     - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
       propertyPath: material
       value: 
-      objectReference: {fileID: 2100000, guid: faf0a8cca8fb348df88af31ca92cb198, type: 2}
+      objectReference: {fileID: 2100000, guid: 122d4fecd0daa4606960b9553a21dfa3, type: 2}
     - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
       propertyPath: lineWidth
       value: 0.3
@@ -530,7 +542,11 @@ PrefabInstance:
     - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
       propertyPath: headPrefab
       value: 
-      objectReference: {fileID: 944124422934261304, guid: 21aeb48728bb741c095a0540466fae22, type: 3}
+      objectReference: {fileID: 275396658137533965, guid: ecb0e22510de64a51b109aa66fee55e5, type: 3}
+    - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
+      propertyPath: destroyDelay
+      value: 0.25
+      objectReference: {fileID: 0}
     - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
       propertyPath: fadeStartAlpha
       value: 0.6
@@ -710,7 +726,7 @@ PrefabInstance:
     - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
       propertyPath: material
       value: 
-      objectReference: {fileID: 2100000, guid: faf0a8cca8fb348df88af31ca92cb198, type: 2}
+      objectReference: {fileID: 2100000, guid: 2de13a8485e8646c0b53332fa20843c9, type: 2}
     - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
       propertyPath: lineWidth
       value: 0.3
@@ -718,7 +734,11 @@ PrefabInstance:
     - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
       propertyPath: headPrefab
       value: 
-      objectReference: {fileID: 944124422934261304, guid: 21aeb48728bb741c095a0540466fae22, type: 3}
+      objectReference: {fileID: 6370466729488504364, guid: cfb9a33cc673e4be89eb5192865470cf, type: 3}
+    - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
+      propertyPath: destroyDelay
+      value: 0.25
+      objectReference: {fileID: 0}
     - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
       propertyPath: fadeStartAlpha
       value: 0.6
@@ -832,7 +852,7 @@ PrefabInstance:
     - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
       propertyPath: material
       value: 
-      objectReference: {fileID: 2100000, guid: faf0a8cca8fb348df88af31ca92cb198, type: 2}
+      objectReference: {fileID: 2100000, guid: e74da1c09a8634d14a07f8db507d4ebd, type: 2}
     - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
       propertyPath: lineWidth
       value: 0.3
@@ -840,7 +860,11 @@ PrefabInstance:
     - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
       propertyPath: headPrefab
       value: 
-      objectReference: {fileID: 944124422934261304, guid: 21aeb48728bb741c095a0540466fae22, type: 3}
+      objectReference: {fileID: 390701290883051323, guid: 30ce1d724f70a4fbaa9b0eebc85f115c, type: 3}
+    - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
+      propertyPath: destroyDelay
+      value: 0.25
+      objectReference: {fileID: 0}
     - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
       propertyPath: fadeStartAlpha
       value: 0.6
