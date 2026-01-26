@@ -583,7 +583,7 @@ PrefabInstance:
     - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
       propertyPath: headPrefab
       value: 
-      objectReference: {fileID: 1646319188635065345, guid: 1da5f0189318c45519a60890cba0e82f, type: 3}
+      objectReference: {fileID: 390701290883051323, guid: 30ce1d724f70a4fbaa9b0eebc85f115c, type: 3}
     - target: {fileID: 8622806231634694521, guid: 3017df66941b443d4851fa38983ce161, type: 3}
       propertyPath: moveForever
       value: 0
