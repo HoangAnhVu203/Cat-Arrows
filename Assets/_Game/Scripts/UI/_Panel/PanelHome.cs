@@ -137,4 +137,9 @@ public class PanelHome : UICanvas
 
         UIManager.Instance.CloseUIDirectly<PanelLoading>();
     }
+
+    public void OpenPanelAds()
+    {
+        UIManager.Instance.OpenUI<PanelAds>();
+    }
 }
