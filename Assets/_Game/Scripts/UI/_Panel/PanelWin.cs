@@ -61,6 +61,16 @@ public class PanelWin : UICanvas
     }
    public void NextLVBTN()
    {
+    AdService.ShowInterstitial(
+    onAdClosed: () =>
+    {
+        Debug.Log("Ad closed → resume after ad");
+    },
+    onNoAd: () =>
+    {
+        Debug.Log("No ad → alternate flow");
+    }
+);
        LevelManager.Instance.NextLevel();
        Destroy(gameObject);
    }
