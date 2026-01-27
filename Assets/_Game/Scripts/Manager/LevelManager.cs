@@ -168,31 +168,49 @@ public class LevelManager : Singleton<LevelManager>
 
         currentLevelInstance = Instantiate(list[idx], levelRoot);
 
-        // 1) Tính bounds gameplay (để overview đúng, không bị tràn)
-        var zoom = Camera.main.GetComponent<CameraZoomController>();
-        if (zoom != null)
-            zoom.SnapToOverviewOf(currentLevelInstance.transform); // set size + center ngay lập tức
+        var cam = Camera.main;
+        var zoom = cam != null ? cam.GetComponent<CameraZoomController>() : null;
+        var pan = cam != null ? cam.GetComponent<BoardPanController>() : null;
 
-        // 2) Start gameplay logic
+        if (pan != null) pan.Lock(true);
+
+        // ===== (1) SET “GỐC” CHO LEVEL MỚI (rất quan trọng) =====
+        if (cam != null)
+        {
+            Vector3 origin = new Vector3(0f, 0f, -10f);
+            cam.transform.position = origin;
+
+            if (pan != null) pan.SnapTo(origin, alsoSetAsOrigin: true);
+        }
+
+        // ===== (2) CHỤP ORIGIN MỚI CHO ZOOM CONTROLLER =====
+        if (zoom != null) zoom.ForceSetOriginNow();
+
+        // ===== (3) SNAP OVERVIEW THEO BOUNDS LEVEL =====
+        if (zoom != null) zoom.SnapToOverviewOf(currentLevelInstance.transform);
+
+        // đồng bộ pan theo overview (tránh target cũ)
+        if (pan != null) pan.SyncToCurrentCameraAsOrigin(true);
+
         GameManager.Instance?.StartLevel();
         GameManager.Instance?.BringLoadingToFront();
 
-
-        // 3) Giữ loading một chút (nếu bạn muốn)
         if (gameplayLoadingSeconds > 0f)
             yield return new WaitForSecondsRealtime(gameplayLoadingSeconds);
 
-        // 4) Tắt loading TRƯỚC
         GameManager.Instance?.SetLoading(false);
 
-        // 5) RỒI mới zoom cinematic vào gameplay (lúc này người chơi mới thấy)
         if (zoom != null)
-            yield return zoom.ZoomFromOverviewToGameplayCR(); // tween vào gameplay
+            yield return zoom.ZoomFromOverviewToGameplayCR(returnToOriginAfter: true);
+
+        if (pan != null)
+        {
+            pan.SyncToCurrentCameraAsOrigin(true);
+            pan.Lock(false);
+        }
 
         loadCR = null;
     }
-
-
 
     private void ClearCurrentLevel()
     {
@@ -230,7 +248,7 @@ public class LevelManager : Singleton<LevelManager>
         saved = Mathf.Clamp(saved, 0, levelsNormal.Count - 1);
 
         currentMode = LevelMode.Normal;
-        currentLevelIndex = saved;   // chỉ set index thôi, KHÔNG load prefab
+        currentLevelIndex = saved;
     }
 
     public void ClearLevelOnly()

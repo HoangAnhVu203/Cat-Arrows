@@ -1,13 +1,13 @@
 using System.Collections.Generic;
+using Unity.Jobs;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 
 public class BoardPanController : MonoBehaviour
 {
-    [Header("Target")]
-    [SerializeField] Transform boardRoot;
-    [SerializeField] Camera cam;
+    [Header("Camera")]
+    [SerializeField] private Camera cam;
 
     [Header("Enable")]
     public bool enablePan = true;
@@ -19,100 +19,122 @@ public class BoardPanController : MonoBehaviour
     [Range(0f, 30f)] public float follow = 18f;
     [Range(0f, 30f)] public float inertia = 10f;
 
-    [Header("Block Pan When Touching Line")]
-    [SerializeField] private LayerMask blockPanMask;
+    [Header("Drag")]
     [SerializeField] private float dragStartThresholdPx = 12f;
 
-    [Header("Zoom")]
-    [SerializeField] private bool enableZoom = true;
-    [SerializeField] private float zoomSpeedMouse = 2.0f;     // cuộn chuột
-    [SerializeField] private float zoomSpeedPinch = 0.01f;    // pinch
-    [SerializeField] private float zoomLerp = 20f;            // mượt zoom
-    [SerializeField] private float fitMargin = 0.25f;         // nới thêm biên cho vừa khít
+    [Header("Block Pan When Touching Line")]
+    [SerializeField] private LayerMask blockPanMask;
 
-    // Nếu muốn cho zoom-in sâu hơn size ban đầu, set > 1
+    [Header("Zoom (Orthographic)")]
+    [SerializeField] private bool enableZoom = true;
+    [SerializeField] private float zoomSpeedMouse = 2.0f;
+    [SerializeField] private float zoomSpeedPinch = 0.01f;
+    [SerializeField] private float zoomLerp = 20f;
+    [SerializeField] private float fitMargin = 0.25f;
     [SerializeField] private float maxZoomInMultiplier = 1.0f;
 
-    Vector3 startPos;
-    Vector3 targetPos;
+    // ==== runtime pan ====
+    private Vector3 camStartPos;
+    private Vector3 camTargetPos;
 
-    bool dragging;
-    Vector3 lastWorld;
-    Vector3 velocity;
+    private bool dragging;
+    private bool pendingDrag;
+    private Vector2 pressScreenPos;
+    private Vector2 lastScreenPos;
+    private Vector3 velocity;           // world units / sec
+    private bool blockThisPress;
 
-    bool pendingDrag;
-    Vector2 pressScreenPos;
-    Vector3 pressWorldPos;
-    bool blockThisPress;
+    // ==== runtime zoom ====
+    private float orthoInitial;
+    private float orthoMinFit;          // zoom out max (size lớn)
+    private float orthoMaxIn;           // zoom in max (size nhỏ)
+    private float orthoTarget;
+    private float orthoMaxOut;   // zoom out tối đa (size lớn nhất)
 
-    // Zoom runtime
-    float orthoInitial;
-    float orthoMinFit;      // zoom out tối đa (nhìn rộng nhất) -> size lớn hơn
-    float orthoMax;         // zoom in tối đa (nhìn gần nhất)  -> size nhỏ hơn
-    float orthoTarget;
+    // pinch
+    private bool pinching;
+    private float lastPinchDist;
 
-    // Pinch state
-    bool pinching;
-    float lastPinchDist;
+    // lock (cinematic/loading)
+    public bool IsLocked { get; private set; }
 
-    static readonly List<RaycastResult> _uiHits = new List<RaycastResult>(32);
+    private static readonly List<RaycastResult> _uiHits = new List<RaycastResult>(32);
 
-    void Awake()
+    private void Awake()
     {
         if (!cam) cam = Camera.main;
-        if (!boardRoot) boardRoot = transform;
+        if (!cam) { enabled = false; return; }
 
-        startPos = boardRoot.position;
-        targetPos = startPos;
+        camStartPos = cam.transform.position;
+        camTargetPos = camStartPos;
+
+        // set target = size hiện tại trước
+        if (cam.orthographic) orthoTarget = cam.orthographicSize;
 
         SetupZoomLimits();
     }
 
-    void OnEnable()
+
+    private void OnEnable()
     {
-        SetupZoomLimits(); // phòng khi đổi orientation/aspect
+        if (cam && cam.orthographic)
+        {
+            if (orthoTarget <= 0f) orthoTarget = cam.orthographicSize;
+            SetupZoomLimits();
+        }
     }
 
-    void Update()
+
+    private void Start()
     {
-        if (!cam || !boardRoot) return;
+        SyncToCurrentCameraAsOrigin(true);
+    }
+
+    public void Lock(bool v)
+    {
+        IsLocked = v;
+
+        if (!cam) cam = Camera.main;
+        if (!cam) return;
+
+        if (v)
+        {
+            // Đồng bộ trạng thái nội bộ = camera hiện tại
+            camTargetPos = cam.transform.position;
+            camStartPos = camTargetPos;
+            velocity = Vector3.zero;
+
+            // reset input state
+            dragging = false;
+            pendingDrag = false;
+            blockThisPress = false;
+            pinching = false;
+
+            // Quan trọng: sync zoom target nếu bạn có zoom nội bộ
+            if (cam.orthographic) orthoTarget = cam.orthographicSize;
+        }
+    }
+
+
+    private void Update()
+    {
+        if (!cam) return;
+
+        // Khi cinematic/loading: tuyệt đối không ghi đè camera
+        if (IsLocked) return;
 
         // ===== ZOOM =====
-        if (enableZoom)
-        {
-            HandleZoom();
-
-            if (cam.orthographic)
-            {
-                cam.orthographicSize = Mathf.Lerp(
-                    cam.orthographicSize,
-                    orthoTarget,
-                    1f - Mathf.Exp(-zoomLerp * Time.unscaledDeltaTime)
-                );
-            }
-        }
+        ApplyZoomOnly();
 
         // ===== PAN =====
-        if (!enablePan) return;
-
-        // Smooth follow
-        boardRoot.position = Vector3.Lerp(
-            boardRoot.position,
-            targetPos,
-            1f - Mathf.Exp(-follow * Time.unscaledDeltaTime)
-        );
-
-        // Inertia when not dragging
-        if (!dragging && velocity.sqrMagnitude > 0.0001f)
+        if (!enablePan)
         {
-            targetPos += velocity * Time.unscaledDeltaTime;
-            velocity = Vector3.Lerp(
-                velocity,
-                Vector3.zero,
-                1f - Mathf.Exp(-inertia * Time.unscaledDeltaTime)
-            );
-            targetPos = ClampToStart(targetPos);
+            ApplyCameraFollowOnly();
+            return;
         }
+
+        ApplyCameraFollowOnly();
+        ApplyInertia();
 
         // Input PAN (Mouse)
         if (Mouse.current != null)
@@ -125,7 +147,7 @@ public class BoardPanController : MonoBehaviour
                 EndDrag();
         }
 
-        // Input PAN (Touch - chỉ khi không pinch)
+        // Input PAN (Touch) - chỉ khi không pinch
         if (Touchscreen.current != null)
         {
             var t = Touchscreen.current.primaryTouch;
@@ -138,66 +160,94 @@ public class BoardPanController : MonoBehaviour
         }
     }
 
+    // ===================== APPLY =====================
+
+    private void ApplyZoomOnly()
+    {
+        if (!enableZoom || !cam.orthographic) return;
+
+        HandleZoom();
+
+        cam.orthographicSize = Mathf.Lerp(
+            cam.orthographicSize,
+            orthoTarget,
+            1f - Mathf.Exp(-zoomLerp * Time.unscaledDeltaTime)
+        );
+    }
+
+    private void ApplyCameraFollowOnly()
+    {
+        // Luôn lerp theo camTargetPos (không “snap” khi kéo để tránh feedback loop)
+        cam.transform.position = Vector3.Lerp(
+            cam.transform.position,
+            camTargetPos,
+            1f - Mathf.Exp(-follow * Time.unscaledDeltaTime)
+        );
+    }
+
+    private void ApplyInertia()
+    {
+        if (dragging) return;
+        if (velocity.sqrMagnitude <= 0.0001f) return;
+
+        camTargetPos += velocity * Time.unscaledDeltaTime;
+
+        velocity = Vector3.Lerp(
+            velocity,
+            Vector3.zero,
+            1f - Mathf.Exp(-inertia * Time.unscaledDeltaTime)
+        );
+
+        camTargetPos = ClampCamToStart(camTargetPos);
+    }
+
     // ===================== ZOOM =====================
 
-    void SetupZoomLimits()
+    private void SetupZoomLimits()
     {
-        if (!cam) return;
+        if (!cam || !cam.orthographic) return;
 
-        if (!cam.orthographic)
-        {
-            Debug.LogWarning("[BoardPanController] Zoom fit theo maxOffset đang code cho Orthographic camera.");
-            return;
-        }
-
+        // orthoInitial = size hiện tại lúc setup (coi như "default" của scene)
         orthoInitial = cam.orthographicSize;
 
-        // “fit” vùng có thể pan: startPos +/- maxOffset
-        // Camera orthographicSize là nửa chiều cao nhìn thấy.
-        // Nửa chiều rộng nhìn thấy = orthographicSize * aspect
         float aspect = cam.aspect;
 
         float halfW = maxOffset.x + fitMargin;
         float halfH = maxOffset.y + fitMargin;
 
-        // size cần để vừa khít theo chiều ngang: halfW / aspect
         float needSizeForWidth = halfW / Mathf.Max(0.0001f, aspect);
         float needSizeForHeight = halfH;
 
-        // orthoMinFit = size lớn nhất cần để thấy toàn vùng pan (zoom out tới đây là “khít”)
         orthoMinFit = Mathf.Max(needSizeForWidth, needSizeForHeight);
 
-        // Zoom in tối đa: mặc định về size ban đầu (hoặc sâu hơn nếu multiplier > 1)
-        orthoMax = orthoInitial / Mathf.Max(0.0001f, maxZoomInMultiplier);
+        // zoom in tối đa (size nhỏ nhất)
+        orthoMaxIn = orthoInitial / Mathf.Max(0.0001f, maxZoomInMultiplier);
 
-        // Quy ước:
-        // - ortho lớn => zoom out (nhìn rộng)
-        // - ortho nhỏ => zoom in  (nhìn gần)
-        // Giới hạn: [orthoMax (nhỏ), orthoMinFit (lớn)]
-        orthoTarget = Mathf.Clamp(cam.orthographicSize, orthoMax, orthoMinFit);
+        // zoom out tối đa (size lớn nhất) - KHÔNG được nhỏ hơn size ban đầu
+        orthoMaxOut = Mathf.Max(orthoInitial, orthoMinFit);
+
+        // IMPORTANT: chỉ clamp orthoTarget, không ép camSize hiện tại
+        orthoTarget = Mathf.Clamp(orthoTarget, orthoMaxIn, orthoMaxOut);
     }
 
-    void HandleZoom()
+    private void HandleZoom()
     {
         if (!cam || !cam.orthographic) return;
 
-        // Không zoom nếu đang chạm UI
-        if (IsPointerBlockedByUI(GetAnyPointerPos()))
+        Vector2 anyPos = GetAnyPointerPos();
+        if (IsPointerBlockedByUI(anyPos))
         {
             pinching = false;
             return;
         }
 
-        // Pinch zoom (Touch)
-        if (Touchscreen.current != null)
+        // Pinch (Touch)
+        if (Touchscreen.current != null && Touchscreen.current.touches.Count >= 2)
         {
-            var t0 = Touchscreen.current.touches.Count > 0 ? Touchscreen.current.touches[0] : default;
-            var t1 = Touchscreen.current.touches.Count > 1 ? Touchscreen.current.touches[1] : default;
+            var t0 = Touchscreen.current.touches[0];
+            var t1 = Touchscreen.current.touches[1];
 
-            bool twoTouches = Touchscreen.current.touches.Count >= 2 &&
-                              t0.press.isPressed && t1.press.isPressed;
-
-            if (twoTouches)
+            if (t0.press.isPressed && t1.press.isPressed)
             {
                 Vector2 p0 = t0.position.ReadValue();
                 Vector2 p1 = t1.position.ReadValue();
@@ -213,51 +263,43 @@ public class BoardPanController : MonoBehaviour
                     float delta = dist - lastPinchDist;
                     lastPinchDist = dist;
 
-                    // delta > 0 => 2 ngón tách ra => zoom in (ortho nhỏ lại)
-                    // delta < 0 => chụm lại      => zoom out (ortho lớn lên)
+                    // delta > 0: tách ra -> zoom in (ortho giảm)
                     orthoTarget -= delta * zoomSpeedPinch;
-                    orthoTarget = Mathf.Clamp(orthoTarget, orthoMax, orthoMinFit);
+                    orthoTarget = Mathf.Clamp(orthoTarget, orthoMaxIn, orthoMinFit);
                 }
 
-                // Khi pinch thì khóa pan
+                // pinch thì không pan
                 blockThisPress = true;
                 pendingDrag = false;
                 dragging = false;
-
+                velocity = Vector3.zero;
                 return;
-            }
-            else
-            {
-                pinching = false;
             }
         }
 
-        // Mouse wheel zoom (PC)
+        pinching = false;
+
+        // Mouse wheel
         if (Mouse.current != null)
         {
             float scroll = Mouse.current.scroll.ReadValue().y;
-
             if (Mathf.Abs(scroll) > 0.01f)
             {
-                // scroll dương => thường là cuộn lên => zoom in (ortho giảm)
                 orthoTarget -= scroll * 0.01f * zoomSpeedMouse;
-                orthoTarget = Mathf.Clamp(orthoTarget, orthoMax, orthoMinFit);
+                orthoTarget = Mathf.Clamp(orthoTarget, orthoMaxIn, orthoMinFit);
             }
         }
     }
 
-    Vector2 GetAnyPointerPos()
+    private Vector2 GetAnyPointerPos()
     {
         if (Touchscreen.current != null && Touchscreen.current.primaryTouch.press.isPressed)
             return Touchscreen.current.primaryTouch.position.ReadValue();
-
         if (Mouse.current != null)
             return Mouse.current.position.ReadValue();
-
         return Vector2.zero;
     }
 
-    // Public: zoom out “vừa khít” vùng pan
     public void ZoomToFitPanArea()
     {
         if (!cam || !cam.orthographic) return;
@@ -265,18 +307,18 @@ public class BoardPanController : MonoBehaviour
         orthoTarget = orthoMinFit;
     }
 
-    // Public: zoom về size ban đầu
     public void ZoomToInitial()
     {
         if (!cam || !cam.orthographic) return;
         SetupZoomLimits();
-        orthoTarget = Mathf.Clamp(orthoInitial, orthoMax, orthoMinFit);
+        orthoTarget = Mathf.Clamp(orthoInitial, orthoMaxIn, orthoMinFit);
     }
 
-    // ===================== PAN =====================
+    // ===================== PAN (STABLE: SCREEN DELTA -> WORLD DELTA) =====================
 
-    void BeginDrag(Vector2 screenPos)
+    private void BeginDrag(Vector2 screenPos)
     {
+        if (pinching) return;
         if (IsPointerBlockedByUI(screenPos)) return;
 
         if (IsPointerBlockedByWorld(screenPos))
@@ -292,15 +334,15 @@ public class BoardPanController : MonoBehaviour
         dragging = false;
 
         pressScreenPos = screenPos;
-        pressWorldPos = ScreenToWorldPlane(screenPos);
+        lastScreenPos = screenPos;
 
         velocity = Vector3.zero;
-        lastWorld = pressWorldPos;
     }
 
-    void Drag(Vector2 screenPos)
+    private void Drag(Vector2 screenPos)
     {
         if (blockThisPress) return;
+        if (pinching) return;
 
         if (pendingDrag && !dragging)
         {
@@ -309,48 +351,47 @@ public class BoardPanController : MonoBehaviour
 
             dragging = true;
             pendingDrag = false;
-            lastWorld = ScreenToWorldPlane(screenPos);
+            lastScreenPos = screenPos;
         }
 
         if (!dragging) return;
 
-        Vector3 w = ScreenToWorldPlane(screenPos);
-        Vector3 delta = w - lastWorld;
-        lastWorld = w;
+        Vector2 dScreen = screenPos - lastScreenPos;
+        lastScreenPos = screenPos;
 
-        targetPos += delta;
-        targetPos = ClampToStart(targetPos);
+        // convert pixel delta -> world delta (ổn định, không phụ thuộc cam.position trong frame)
+        Vector3 dWorld = ScreenDeltaToWorldDelta(dScreen);
 
-        velocity = Vector3.Lerp(
-            velocity,
-            delta / Mathf.Max(0.0001f, Time.unscaledDeltaTime),
-            0.25f
-        );
+        // kéo bản đồ: tay đi đâu map đi đó => camera đi ngược
+        camTargetPos -= dWorld;
+        camTargetPos = ClampCamToStart(camTargetPos);
+
+        // velocity cho inertia
+        float dt = Mathf.Max(0.0001f, Time.unscaledDeltaTime);
+        Vector3 v = (-dWorld) / dt; // world/sec
+        velocity = Vector3.Lerp(velocity, v, 0.25f);
     }
 
-    void EndDrag()
+    private Vector3 ScreenDeltaToWorldDelta(Vector2 dScreen)
+    {
+        // Ortho: world height visible = 2*orthoSize
+        float size = cam.orthographicSize;
+        float worldPerPixelY = (2f * size) / Mathf.Max(1f, Screen.height);
+        float worldPerPixelX = worldPerPixelY * cam.aspect;
+
+        return new Vector3(dScreen.x * worldPerPixelX, dScreen.y * worldPerPixelY, 0f);
+    }
+
+    private void EndDrag()
     {
         pendingDrag = false;
         dragging = false;
         blockThisPress = false;
     }
 
-    Vector3 ScreenToWorldPlane(Vector2 screenPos)
-    {
-        Vector3 w = cam.ScreenToWorldPoint(new Vector3(screenPos.x, screenPos.y, -cam.transform.position.z));
-        w.z = startPos.z;
-        return w;
-    }
+    // ===================== BLOCKERS =====================
 
-    Vector3 ClampToStart(Vector3 p)
-    {
-        Vector3 off = p - startPos;
-        off.x = Mathf.Clamp(off.x, -maxOffset.x, maxOffset.x);
-        off.y = Mathf.Clamp(off.y, -maxOffset.y, maxOffset.y);
-        return startPos + off;
-    }
-
-    bool IsPointerBlockedByUI(Vector2 screenPos)
+    private bool IsPointerBlockedByUI(Vector2 screenPos)
     {
         if (EventSystem.current == null) return false;
 
@@ -360,26 +401,100 @@ public class BoardPanController : MonoBehaviour
         return _uiHits.Count > 0;
     }
 
-    bool IsPointerBlockedByWorld(Vector2 screenPos)
+    private bool IsPointerBlockedByWorld(Vector2 screenPos)
     {
         if (!cam) return false;
 
-        Vector3 wp = cam.ScreenToWorldPoint(new Vector3(screenPos.x, screenPos.y, -cam.transform.position.z));
+        // Với ortho: z input không quan trọng, dùng z-dist từ camera đến plane z=0
+        float zDist = -cam.transform.position.z;
+        Vector3 wp = cam.ScreenToWorldPoint(new Vector3(screenPos.x, screenPos.y, zDist));
         Vector2 p2 = new Vector2(wp.x, wp.y);
 
         var hit = Physics2D.OverlapPoint(p2, blockPanMask);
         return hit != null;
     }
 
-    // ==== PUBLIC API ====
+    // ===================== CLAMP / API =====================
+
+    private Vector3 ClampCamToStart(Vector3 p)
+    {
+        Vector3 off = p - camStartPos;
+        off.x = Mathf.Clamp(off.x, -maxOffset.x, maxOffset.x);
+        off.y = Mathf.Clamp(off.y, -maxOffset.y, maxOffset.y);
+        return camStartPos + off;
+    }
+
     public void Recenter()
     {
-        targetPos = startPos;
+        camTargetPos = camStartPos;
         velocity = Vector3.zero;
     }
 
     public float GetDistanceFromCenter()
     {
-        return (boardRoot.position - startPos).magnitude;
+        return (cam.transform.position - camStartPos).magnitude;
     }
+
+    public void SyncToCurrentCameraAsOrigin(bool zeroVelocity = true)
+    {
+        if (!cam) cam = Camera.main;
+        if (!cam) return;
+
+        camStartPos = cam.transform.position;
+        camTargetPos = camStartPos;
+
+        if (zeroVelocity) velocity = Vector3.zero;
+
+        dragging = pendingDrag = false;
+        blockThisPress = false;
+        pinching = false;
+
+        if (cam.orthographic)
+        {
+            orthoTarget = cam.orthographicSize;
+            SetupZoomLimits(); 
+        }
+    }
+
+
+
+
+    public void SetTargetPosition(Vector3 worldPos, bool setAsOrigin = false)
+    {
+        if (!cam) return;
+
+        worldPos.z = cam.transform.position.z;
+        camTargetPos = worldPos;
+
+        if (setAsOrigin)
+        {
+            camStartPos = camTargetPos;
+            velocity = Vector3.zero;
+        }
+    }
+
+    public void SnapTo(Vector3 worldPos, bool alsoSetAsOrigin = true)
+    {
+        if (!cam) cam = Camera.main;
+        if (!cam) return;
+
+        // giữ z camera
+        worldPos.z = cam.transform.position.z;
+
+        cam.transform.position = worldPos;
+
+        camTargetPos = worldPos;
+
+        if (alsoSetAsOrigin)
+        {
+            camStartPos = worldPos;
+        }
+
+        velocity = Vector3.zero;
+        dragging = pendingDrag = false;
+        blockThisPress = false;
+        pinching = false;
+    }
+
+
 }
