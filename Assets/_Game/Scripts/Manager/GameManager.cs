@@ -346,7 +346,7 @@ public class GameManager : Singleton<GameManager>
         // Đưa lên top theo sibling
         loadingPanel.transform.SetAsLastSibling();
 
-        // Nếu PanelLoading có Canvas override sorting thì cũng set luôn
+        // Nếu PanelLoading có Canvas override sorting thì cũng set 
         var c = loadingPanel.GetComponent<Canvas>();
         if (c != null && c.overrideSorting)
             c.sortingOrder = 9999;
@@ -365,10 +365,9 @@ public class GameManager : Singleton<GameManager>
 
         yield return new WaitForSecondsRealtime(1.0f);
 
-        // QUAN TRỌNG: đánh dấu đã xong tutorial (để lần sau không vào nữa)
+        // đánh dấu đã xong tutorial (để lần sau không vào nữa)
         MarkBootTutorialDone();
 
-        // Set progress sang level 1 (index=1) để Play sau đó chạy như cũ
         if (LevelManager.Instance != null)
             LevelManager.Instance.ForceSetNormalProgressIndex(1);
 
@@ -415,7 +414,7 @@ public class GameManager : Singleton<GameManager>
 
     private IEnumerator BringLoadingToFrontEndOfFrame()
     {
-        yield return null; // cuối frame
+        yield return null; 
         BringLoadingToFront();
     }
 

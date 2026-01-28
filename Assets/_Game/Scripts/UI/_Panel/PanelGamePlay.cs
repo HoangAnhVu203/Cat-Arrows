@@ -218,6 +218,8 @@ AdService.ShowInterstitial(
         var lines = FindObjectsOfType<GridWavyLineMesh>(true);
         if (lines == null || lines.Length == 0) return;
 
+        float cellWorldSize = FindObjectOfType<GridManager>().cellSize; 
+
         var mat = new Material(Shader.Find("Sprites/Default"));
         Color gray = new Color(0.9f, 0.9f, 0.9f, 0.8f);
 
@@ -226,6 +228,9 @@ AdService.ShowInterstitial(
             if (l == null) continue;
             if (!l.TryGetPreviewPathWorld(out var ptsW) || ptsW == null || ptsW.Length < 2) continue;
 
+            // ✅ luôn nối thêm 20 ô, không phụ thuộc extraOutCells
+            ptsW = BuildFixedOutPath(ptsW, cellWorldSize, outCells: 20, stepPerCell: 1);
+
             Transform parent = l.transform;
 
             GameObject go = new GameObject("PathPreview");
@@ -233,30 +238,28 @@ AdService.ShowInterstitial(
 
             var lr = go.AddComponent<LineRenderer>();
             lr.material = mat;
-
             lr.useWorldSpace = false;
 
-            lr.positionCount = ptsW.Length;
-
+            // WORLD -> LOCAL (copy mảng mới, không phá ptsW)
+            var local = new Vector3[ptsW.Length];
             for (int i = 0; i < ptsW.Length; i++)
-                ptsW[i] = parent.InverseTransformPoint(ptsW[i]);
+                local[i] = parent.InverseTransformPoint(ptsW[i]);
 
-            lr.SetPositions(ptsW);
+            lr.positionCount = local.Length;
+            lr.SetPositions(local);
 
             lr.startWidth = 0.08f;
             lr.endWidth = 0.08f;
             lr.numCapVertices = 4;
             lr.numCornerVertices = 4;
-
-            // để nằm dưới head/line một chút
             lr.sortingOrder = -1;
-
             lr.startColor = gray;
             lr.endColor = gray;
 
             previewLines.Add(lr);
         }
     }
+
 
 
 
@@ -346,6 +349,9 @@ AdService.ShowInterstitial(
         if (line == null) return;
         if (!line.TryGetPreviewPathWorld(out var ptsW) || ptsW == null || ptsW.Length < 2) return;
 
+        float cellWorldSize = FindObjectOfType<GridManager>().cellSize; 
+        ptsW = BuildFixedOutPath(ptsW, cellWorldSize, outCells: 20, stepPerCell: 1);
+
         Transform parent = line.transform;
 
         if (hintPathLR == null)
@@ -354,35 +360,30 @@ AdService.ShowInterstitial(
             go.transform.SetParent(parent, false);
 
             hintPathLR = go.AddComponent<LineRenderer>();
-            hintPathLR.useWorldSpace = false;            // QUAN TRỌNG
+            hintPathLR.useWorldSpace = false;
             hintPathLR.material = new Material(Shader.Find("Sprites/Default"));
             hintPathLR.numCapVertices = 4;
             hintPathLR.numCornerVertices = 4;
             hintPathLR.startWidth = 0.08f;
             hintPathLR.endWidth = 0.08f;
-
-            // đảm bảo nằm dưới head / mesh
             hintPathLR.sortingOrder = -1;
-
-            // xanh lá gợi ý
-            Color green = new Color(0.2f, 0.9f, 0.25f, 0.95f);
             hintPathLR.startColor = Color.green;
             hintPathLR.endColor = Color.green;
         }
-        else
+        else if (hintPathLR.transform.parent != parent)
         {
-            if (hintPathLR.transform.parent != parent)
-                hintPathLR.transform.SetParent(parent, false);
+            hintPathLR.transform.SetParent(parent, false);
         }
 
-        hintPathLR.positionCount = ptsW.Length;
-
-        // WORLD -> LOCAL theo LINE (chuẩn nhất)
+        // WORLD -> LOCAL (copy)
+        var local = new Vector3[ptsW.Length];
         for (int i = 0; i < ptsW.Length; i++)
-            ptsW[i] = parent.InverseTransformPoint(ptsW[i]);
+            local[i] = parent.InverseTransformPoint(ptsW[i]);
 
-        hintPathLR.SetPositions(ptsW);
+        hintPathLR.positionCount = local.Length;
+        hintPathLR.SetPositions(local);
     }
+
 
 
 
@@ -438,6 +439,31 @@ AdService.ShowInterstitial(
         }
     }
 
+    // luôn nối thêm đúng outCells (20) theo hướng đoạn cuối
+    Vector3[] BuildFixedOutPath(Vector3[] ptsW, float cellWorldSize, int outCells = 20, int stepPerCell = 1)
+    {
+        if (ptsW == null || ptsW.Length < 2) return ptsW;
+
+        // hướng đi ra: lấy từ 2 điểm cuối
+        Vector3 last = ptsW[ptsW.Length - 1];
+        Vector3 prev = ptsW[ptsW.Length - 2];
+
+        Vector3 dir = (last - prev);
+        if (dir.sqrMagnitude < 0.000001f) return ptsW;
+        dir.Normalize();
+
+        // số điểm thêm vào (càng nhiều càng mượt)
+        int steps = Mathf.Max(1, outCells * Mathf.Max(1, stepPerCell));
+        float stepDist = (cellWorldSize * outCells) / steps;
+
+        var list = new List<Vector3>(ptsW.Length + steps);
+        list.AddRange(ptsW);
+
+        for (int i = 1; i <= steps; i++)
+            list.Add(last + dir * (stepDist * i));
+
+        return list.ToArray();
+    }
 
 
 
