@@ -5,10 +5,9 @@ using UnityEngine.UI;
 public class PanelLoading : UICanvas
 {
     [Header("Text")]
-    public Text uiText;          
+    public Text uiText;
 
     [Header("Config")]
-    public string baseText = "Loading";
     public int maxDots = 3;
     public float interval = 0.4f;
 
@@ -22,7 +21,10 @@ public class PanelLoading : UICanvas
     void OnDisable()
     {
         if (loopCR != null)
+        {
             StopCoroutine(loopCR);
+            loopCR = null;
+        }
     }
 
     IEnumerator Loop()
@@ -31,15 +33,15 @@ public class PanelLoading : UICanvas
 
         while (true)
         {
-            dot = (dot + 1) % (maxDots + 1);
+            dot++;
 
-            string dots = new string('.', dot);
-            string content = baseText + dots;
+            if (dot > maxDots)
+                dot = 1;
 
-            if (uiText) uiText.text = content;
+            if (uiText != null)
+                uiText.text = string.Join(" ", new string('.', dot).ToCharArray());
 
             yield return new WaitForSeconds(interval);
         }
     }
-
 }

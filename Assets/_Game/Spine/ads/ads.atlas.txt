@@ -1,0 +1,90 @@
+
+ads.png
+size: 1325,1028
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+A
+  rotate: true
+  xy: 2, 2
+  size: 227, 273
+  orig: 230, 275
+  offset: 2, 1
+  index: -1
+D
+  rotate: true
+  xy: 277, 5
+  size: 224, 271
+  orig: 226, 273
+  offset: 1, 1
+  index: -1
+Rectangle 13
+  rotate: false
+  xy: 812, 451
+  size: 511, 575
+  orig: 511, 575
+  offset: 0, 0
+  index: -1
+thanhchan1
+  rotate: false
+  xy: 812, 451
+  size: 511, 575
+  orig: 511, 575
+  offset: 0, 0
+  index: -1
+thanhchan2
+  rotate: false
+  xy: 812, 451
+  size: 511, 575
+  orig: 511, 575
+  offset: 0, 0
+  index: -1
+S
+  rotate: false
+  xy: 1060, 187
+  size: 238, 262
+  orig: 240, 264
+  offset: 1, 1
+  index: -1
+hinhtron
+  rotate: true
+  xy: 2, 231
+  size: 795, 808
+  orig: 797, 810
+  offset: 1, 1
+  index: -1
+star1
+  rotate: false
+  xy: 550, 28
+  size: 201, 201
+  orig: 203, 203
+  offset: 1, 1
+  index: -1
+star3
+  rotate: false
+  xy: 550, 28
+  size: 201, 201
+  orig: 203, 203
+  offset: 1, 1
+  index: -1
+star2
+  rotate: true
+  xy: 919, 132
+  size: 72, 71
+  orig: 74, 73
+  offset: 1, 1
+  index: -1
+star5
+  rotate: false
+  xy: 753, 41
+  size: 164, 163
+  orig: 166, 166
+  offset: 1, 1
+  index: -1
+star6
+  rotate: false
+  xy: 812, 206
+  size: 246, 243
+  orig: 248, 245
+  offset: 1, 1
+  index: -1

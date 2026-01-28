@@ -205,4 +205,8 @@ public class FooterTabBar : UICanvas
         else if (index == 2) tabTransition.SwitchToCalendar();
     }
 
+    public void OpenPanelAds()
+    {
+        UIManager.Instance.OpenUI<PanelAds>();
+    }
 }
