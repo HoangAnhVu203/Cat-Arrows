@@ -7,20 +7,20 @@ using GoogleMobileAds.Common;
 #region BOOTSTRAP
 public static class AdServiceBootstrap
 {
-    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
-    static void Initialize()
-    {
-        if (GameObject.Find("AdServiceRuntime") != null) return;
+    // [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+    // static void Initialize()
+    // {
+    //     // if (GameObject.Find("AdServiceRuntime") != null) return;
 
-        var go = new GameObject("AdServiceRuntime");
-        UnityEngine.Object.DontDestroyOnLoad(go);
+    //     // var go = new GameObject("AdServiceRuntime");
+    //     // UnityEngine.Object.DontDestroyOnLoad(go);
 
-        go.AddComponent<InterstitialAdManager>();
-        go.AddComponent<RewardedAdManager>();
-        go.AddComponent<AdServiceRuntime>();
+    //     // go.AddComponent<InterstitialAdManager>();
+    //     // go.AddComponent<RewardedAdManager>();
+    //     // go.AddComponent<AdServiceRuntime>();
 
-        Debug.Log("[AdServiceBootstrap] Runtime initialized.");
-    }
+    //     // Debug.Log("[AdServiceBootstrap] Runtime initialized.");
+    // }
 }
 #endregion
 
@@ -48,7 +48,7 @@ public class InterstitialAdManager : MonoBehaviour
 #if UNITY_ANDROID
     [SerializeField] private string adUnitId = "";
 #elif UNITY_IOS
-    [SerializeField] private string adUnitId = "ca-app-pub-1650520002983936/1757127039";
+    [SerializeField] private string adUnitId = "";
 
 #else
     [SerializeField] private string adUnitId = "unused";
@@ -183,7 +183,7 @@ public class RewardedAdManager : MonoBehaviour
 #if UNITY_ANDROID
     [SerializeField] private string adUnitId = "";
 #elif UNITY_IOS
-    [SerializeField] private string adUnitId = "ca-app-pub-1650520002983936/6345633954";
+    [SerializeField] private string adUnitId = "";
 
 #else
     [SerializeField] private string adUnitId = "unused";

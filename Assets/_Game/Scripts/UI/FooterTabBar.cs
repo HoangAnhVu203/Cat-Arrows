@@ -117,11 +117,6 @@ public class FooterTabBar : UICanvas
 
         currentIndex = index;
 
-        if (tabTransition != null)
-        {
-            if (index == 1) tabTransition.SwitchToHome();
-            else if (index == 2) tabTransition.SwitchToCalendar();
-        }
         NotifySwitch(index);
     }
 
@@ -201,12 +196,10 @@ public class FooterTabBar : UICanvas
     {
         if (tabTransition == null) return;
 
-        if (index == 1) tabTransition.SwitchToHome();
+        if (index == 0) tabTransition.SwitchToLock();
+        else if (index == 1) tabTransition.SwitchToHome();
         else if (index == 2) tabTransition.SwitchToCalendar();
     }
 
-    public void OpenPanelAds()
-    {
-        UIManager.Instance.OpenUI<PanelAds>();
-    }
+
 }

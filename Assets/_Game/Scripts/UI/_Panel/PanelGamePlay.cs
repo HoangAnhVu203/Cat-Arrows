@@ -105,45 +105,16 @@ public class PanelGamePlay : UICanvas
 
     public void OnEraseButtonClick()
     {
-
-
-
-                    AdService.ShowRewarded(
-    onEarned: () => 
-    {
-        // Debug.Log("Earned reward");
-        // // Nếu bạn muốn NextLevelSystem() chạy luôn cả khi earn:
-             GameManager.Instance.SetEraseMode(true);
+        GameManager.Instance.SetEraseMode(true);
 
         StartCoroutine(ScaleButton(
             UnityEngine.EventSystems.EventSystem.current.currentSelectedGameObject
                 .transform as RectTransform
         ));
-    },
-    onClosed: () => 
-    {
-        // Debug.Log("Closed (no reward)");
-        // NextLevelSystem();   // chạy khi đóng quảng cáo
-
-    }
-);
-        
-   
     }
 
     public void OnShowPathButtonClick()
     {
-AdService.ShowInterstitial(
-    onAdClosed: () =>
-    {
-        Debug.Log("Ad closed → resume after ad");
-    },
-    onNoAd: () =>
-    {
-        Debug.Log("No ad → alternate flow");
-    }
-);
-
         bool next = !GameManager.Instance.ShowPathMode;
         GameManager.Instance.SetShowPathMode(next);
 
@@ -155,29 +126,13 @@ AdService.ShowInterstitial(
 
     public void OnHintButtonClick()
     {
-
-                    AdService.ShowRewarded(
-    onEarned: () => 
-    {
-        // Debug.Log("Earned reward");
-        // // Nếu bạn muốn NextLevelSystem() chạy luôn cả khi earn:
-         bool next = !GameManager.Instance.HintMode;
+        bool next = !GameManager.Instance.HintMode;
         GameManager.Instance.SetHintMode(next);
 
         StartCoroutine(ScaleButton(
             UnityEngine.EventSystems.EventSystem.current.currentSelectedGameObject
                 .transform as RectTransform
         ));
-    },
-    onClosed: () => 
-    {
-        // Debug.Log("Closed (no reward)");
-        // NextLevelSystem();   // chạy khi đóng quảng cáo
-
-    }
-);
-        
-       
     }
 
     //===Helper===

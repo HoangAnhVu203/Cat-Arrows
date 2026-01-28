@@ -31,7 +31,10 @@ public class PanelCalendar : UICanvas
     [SerializeField] private Image monthBaseImage;
     [SerializeField] private Image monthArtImage;     // ảnh tháng
 
-    [Serializable]
+    [Header("Lock By Level")]
+    [SerializeField] private GameObject lockObjectAtLevel20;
+    [SerializeField] private int lockAtLevel = 20;
+
     public class Day
     {
         public int dayNum;     // zero-based inside current month (0 = 1st)
@@ -164,7 +167,7 @@ public class PanelCalendar : UICanvas
         UpdateCalendar(currDate.Year, currDate.Month);
         RefreshNavButtons();
         RefreshPlayButton();
-
+        RefreshLockByLevel();
     }
 
     private bool bound;
@@ -407,6 +410,16 @@ public class PanelCalendar : UICanvas
             monthFillImage.sprite = art.fillSprite != null ? art.fillSprite : art.baseSprite;
     }
 
+    void RefreshLockByLevel()
+    {
+        if (lockObjectAtLevel20 == null) return;
+        if (LevelManager.Instance == null) return;
+
+        int currentLevel = LevelManager.Instance.CurrentLevelNumber;
+
+        // Nếu đang ở level 20 → deactivate
+        lockObjectAtLevel20.SetActive(currentLevel != lockAtLevel);
+    }
 
 
 }
