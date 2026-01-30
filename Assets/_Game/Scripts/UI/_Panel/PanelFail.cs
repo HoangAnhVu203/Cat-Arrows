@@ -6,5 +6,6 @@ public class PanelFail : UICanvas
     {
         LevelManager.Instance.ReplayLevel();
         Destroy(gameObject);
+        AudioManager.Instance.PlayButton();
     }
 }

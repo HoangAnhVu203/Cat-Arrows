@@ -218,12 +218,7 @@ MonoBehaviour:
   - {fileID: 6631567624097003198, guid: 4d6aed0f37a4c4917b2e7dc08b48c638, type: 3}
   - {fileID: 3451990505476385277, guid: f733b18b0f5ba44509680db335c50736, type: 3}
   - {fileID: 7709438804999727179, guid: 7e0c12a0bd2c04bbb8eb94f4c3a7e43b, type: 3}
-  - {fileID: 3661455767188800537, guid: 71c345c7ab09a44c7a359354de1137bc, type: 3}
-  - {fileID: 7049111013233633998, guid: 45b402a76ad004fb99cce6fc982f2ae2, type: 3}
-  - {fileID: 1571439176115058712, guid: 34b1702c4c5ce42b7bd1c142ef8c6389, type: 3}
   - {fileID: 1457505151883839590, guid: deabd9e86361d47108c2d750df0141ad, type: 3}
-  - {fileID: 8680459242860893801, guid: acb5f2c2efa024c9dbc8b34c2f16cfad, type: 3}
-  - {fileID: 2823358527842064070, guid: 69ae759e58e25437fbd8d9edb6518784, type: 3}
   - {fileID: 4717427371419833441, guid: 0252287356c3d4fd7acdc8bfae820b85, type: 3}
   - {fileID: 1646961903257175317, guid: 83c4d8f1d856a4ac89fb34c4881c36da, type: 3}
   - {fileID: 2435860308753855755, guid: 205c3ef28e1134b74ab4403a7c0db2cf, type: 3}
@@ -450,10 +445,10 @@ MonoBehaviour:
   sfxSource: {fileID: 276170371}
   bgmGameplay: {fileID: 0}
   sfxMergeBall: {fileID: 0}
-  sfxWin: {fileID: 0}
-  sfxLose: {fileID: 0}
-  sfxButton: {fileID: 0}
-  sfxClick: {fileID: 0}
+  sfxWin: {fileID: 8300000, guid: 12a7ed904376b44bd8145a24fe7ea36b, type: 3}
+  sfxLose: {fileID: 8300000, guid: 329dd1d4e8caa4c9898418337ab617c9, type: 3}
+  sfxButton: {fileID: 8300000, guid: 1613c389f495c4ee1954b4acfca0516d, type: 3}
+  sfxClick: {fileID: 8300000, guid: ceb271f67c8f541b3a994504ccdef12b, type: 3}
 --- !u!4 &534172993
 Transform:
   m_ObjectHideFlags: 0

@@ -72,6 +72,7 @@ public class PanelWin : UICanvas
     }
 );
        LevelManager.Instance.NextLevel();
+       
        Destroy(gameObject);
    }
 

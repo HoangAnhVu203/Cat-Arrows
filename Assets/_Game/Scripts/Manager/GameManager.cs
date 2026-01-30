@@ -210,6 +210,7 @@ public class GameManager : Singleton<GameManager>
         VFX2.SetActive(true);
 
         StartCoroutine(WaitWin());
+        AudioManager.Instance.PlayWin();
         // UIManager.Instance.OpenUI<PanelWin>();
         UIManager.Instance.CloseUIDirectly<PanelGamePlay>();
 
@@ -234,6 +235,7 @@ public class GameManager : Singleton<GameManager>
             return;
         }
 
+        AudioManager.Instance.PlayLose();
         UIManager.Instance.OpenUI<PanelFail>();
         UIManager.Instance.CloseUIDirectly<PanelGamePlay>();
 

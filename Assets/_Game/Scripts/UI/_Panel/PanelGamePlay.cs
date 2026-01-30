@@ -84,6 +84,7 @@ public class PanelGamePlay : UICanvas
     public void RePlayBTN()
     {
         LevelManager.Instance.ReplayLevel();
+        AudioManager.Instance.PlayButton();
 
         AdService.ShowInterstitial(
     onAdClosed: () =>
@@ -101,11 +102,13 @@ public class PanelGamePlay : UICanvas
     public void OpenSetiingUI()
     {
         UIManager.Instance.OpenUI<PanelSetting>();
+        AudioManager.Instance.PlayButton();
     }
 
     public void OnEraseButtonClick()
     {
         GameManager.Instance.SetEraseMode(true);
+        AudioManager.Instance.PlayButton();
 
         StartCoroutine(ScaleButton(
             UnityEngine.EventSystems.EventSystem.current.currentSelectedGameObject
@@ -117,6 +120,7 @@ public class PanelGamePlay : UICanvas
     {
         bool next = !GameManager.Instance.ShowPathMode;
         GameManager.Instance.SetShowPathMode(next);
+        AudioManager.Instance.PlayButton();
 
         StartCoroutine(ScaleButton(
             UnityEngine.EventSystems.EventSystem.current.currentSelectedGameObject
@@ -128,6 +132,7 @@ public class PanelGamePlay : UICanvas
     {
         bool next = !GameManager.Instance.HintMode;
         GameManager.Instance.SetHintMode(next);
+        AudioManager.Instance.PlayButton();
 
         StartCoroutine(ScaleButton(
             UnityEngine.EventSystems.EventSystem.current.currentSelectedGameObject
@@ -356,6 +361,7 @@ public class PanelGamePlay : UICanvas
 
     public void OnBackClick()
     {
+        AudioManager.Instance.PlayButton();
         AdService.ShowInterstitial(
     onAdClosed: () =>
     {
@@ -420,7 +426,11 @@ public class PanelGamePlay : UICanvas
         return list.ToArray();
     }
 
-
+    public void NextLVBtn()
+    {
+        LevelManager.Instance.NextLevel();
+        AudioManager.Instance.PlayButton();
+    }
 
 }
 

@@ -105,6 +105,7 @@ public class PanelHome : UICanvas
 
     private void OnPlayClick()
     {
+        AudioManager.Instance.PlayButton();
         if (LevelManager.Instance != null)
             LevelManager.Instance.LoadSavedLevel();
 
@@ -129,6 +130,7 @@ public class PanelHome : UICanvas
     public void SettingBTN()
     {
         UIManager.Instance.OpenUI<PanelSetting>();
+        AudioManager.Instance.PlayButton();
     }
 
     IEnumerator OffPanel()
@@ -140,6 +142,7 @@ public class PanelHome : UICanvas
 
     public void OpenPanelAds()
     {
+        AudioManager.Instance.PlayButton();
         UIManager.Instance.OpenUI<PanelAds>();
     }
 }
