@@ -72,6 +72,7 @@
   <Project Path="Unity.Advertisement.IosSupport.csproj" />
   <Project Path="Unity.VisualScripting.SettingsProvider.Editor.csproj" />
   <Project Path="GoogleMobileAds.Editor.csproj" />
+  <Project Path="Unity.Advertisement.IosSupport.Editor.Tests.csproj" />
   <Project Path="UnityEditor.UI.Analytics.csproj" />
   <Project Path="Unity.2D.Common.Runtime.csproj" />
   <Project Path="CandyCoded.HapticFeedback.csproj" />
@@ -87,6 +88,7 @@
   <Project Path="CandyCoded.HapticFeedback.iOS.csproj" />
   <Project Path="CFXR.WelcomeScreen.csproj" />
   <Project Path="Unity.RenderPipeline.Universal.ShaderLibrary.csproj" />
+  <Project Path="Unity.Advertisement.IosSupport.Tests.csproj" />
   <Project Path="ToonyColorsPro.Demo.Editor.csproj" />
   <Project Path="Unity.InputSystem.DocCodeSamples.csproj" />
   <Project Path="Unity.RenderPipelines.Universal.Shaders.csproj" />

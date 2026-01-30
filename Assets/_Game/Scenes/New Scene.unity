@@ -243,6 +243,14 @@ MonoBehaviour:
   - {fileID: 5062336471494214402, guid: 757de4c26ad07401fa2f39154279ac55, type: 3}
   - {fileID: 5046611371381564330, guid: f7e2faeb41c174638b4411f81b77e180, type: 3}
   - {fileID: 290991097307582033, guid: bd35227302963423ca463835248066a0, type: 3}
+  - {fileID: 428095387661328306, guid: 000240442ffc14b408f4a6990a8f075b, type: 3}
+  - {fileID: 3407723531613534557, guid: 9c8b332649c964fe1a89066b1645ef68, type: 3}
+  - {fileID: 4947756150036715833, guid: c4eaa4f7a126c4ef580d32bcd1fb5bc6, type: 3}
+  - {fileID: 7748936841099156493, guid: 0cd12d66b10d44f789f3eeeb71b69b28, type: 3}
+  - {fileID: 2915211312109019951, guid: 5bbc665f281ff4cfc921caf328924120, type: 3}
+  - {fileID: 975049086059263073, guid: 5313685b78ddd45d79cd045d830064f1, type: 3}
+  - {fileID: 7734844728083269197, guid: 2ac245bde76294005b14bb459e236e91, type: 3}
+  - {fileID: 6132259866721193711, guid: 8d5ba3fb36cb1493ba80778c738b1b62, type: 3}
   levelsDaily:
   - {fileID: 514775038832374487, guid: 4b7ef912145894c03b27310c00a3dec2, type: 3}
   - {fileID: 514775038832374487, guid: 4b7ef912145894c03b27310c00a3dec2, type: 3}
@@ -280,38 +288,6 @@ MonoBehaviour:
   loadDelay: 0.05
   saveProgress: 1
   gameplayLoadingSeconds: 2
---- !u!1 &185744068
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 185744069}
-  m_Layer: 0
-  m_Name: Level_43
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &185744069
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 185744068}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 991656023}
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &276170370
 GameObject:
   m_ObjectHideFlags: 0
@@ -586,37 +562,6 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &991656022
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 991656023}
-  m_Layer: 0
-  m_Name: Grid
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &991656023
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 991656022}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 185744069}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1058115398
 GameObject:
@@ -983,7 +928,7 @@ MonoBehaviour:
   zoomSpeedPinch: 0.01
   zoomLerp: 20
   fitMargin: 0.25
-  maxZoomInMultiplier: 1
+  maxZoomInMultiplier: 3
 --- !u!1 &1313821934
 GameObject:
   m_ObjectHideFlags: 0
@@ -11147,4 +11092,3 @@ SceneRoots:
   - {fileID: 27735064}
   - {fileID: 1542253439}
   - {fileID: 940337232}
-  - {fileID: 185744069}
